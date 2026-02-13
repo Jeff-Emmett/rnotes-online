@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ──────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  did       String   @unique // EncryptID DID
+  username  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notebooks NotebookCollaborator[]
+  notes     Note[]
+  sharedByMe SharedAccess[] @relation("SharedBy")
+}
+
+// ─── Notebooks ──────────────────────────────────────────────────────
+
+model Notebook {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String?  @db.Text
+  coverColor    String   @default("#f59e0b")
+  canvasSlug    String?
+  canvasShapeId String?
+  isPublic      Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  collaborators NotebookCollaborator[]
+  notes         Note[]
+  sharedAccess  SharedAccess[]
+
+  @@index([slug])
+}
+
+enum CollaboratorRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model NotebookCollaborator {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notebookId String
+  notebook   Notebook         @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  role       CollaboratorRole @default(VIEWER)
+  joinedAt   DateTime         @default(now())
+
+  @@unique([userId, notebookId])
+  @@index([notebookId])
+}
+
+// ─── Notes ──────────────────────────────────────────────────────────
+
+model Note {
+  id            String   @id @default(cuid())
+  notebookId    String?
+  notebook      Notebook? @relation(fields: [notebookId], references: [id], onDelete: SetNull)
+  authorId      String?
+  author        User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  title         String
+  content       String   @db.Text
+  contentPlain  String?  @db.Text
+  type          NoteType @default(NOTE)
+  url           String?
+  language      String?
+  mimeType      String?
+  fileUrl       String?
+  fileSize      Int?
+  isPinned      Boolean  @default(false)
+  canvasShapeId String?
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tags NoteTag[]
+
+  @@index([notebookId])
+  @@index([authorId])
+  @@index([type])
+  @@index([isPinned])
+}
+
+enum NoteType {
+  NOTE
+  CLIP
+  BOOKMARK
+  CODE
+  IMAGE
+  FILE
+}
+
+// ─── Tags ───────────────────────────────────────────────────────────
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String?  @default("#6b7280")
+  createdAt DateTime @default(now())
+
+  notes NoteTag[]
+}
+
+model NoteTag {
+  id     String @id @default(cuid())
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, tagId])
+  @@index([tagId])
+  @@index([noteId])
+}
+
+// ─── Shared Access ──────────────────────────────────────────────────
+
+model SharedAccess {
+  id         String           @id @default(cuid())
+  notebookId String
+  notebook   Notebook         @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  sharedById String
+  sharedBy   User             @relation("SharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
+  targetDid  String
+  role       CollaboratorRole @default(VIEWER)
+  createdAt  DateTime         @default(now())
+
+  @@unique([notebookId, targetDid])
+  @@index([targetDid])
+}
