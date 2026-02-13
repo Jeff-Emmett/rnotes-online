@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
 
 export async function GET(
   _request: NextRequest,
@@ -38,6 +39,14 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+    const role = await getNotebookRole(user.id, params.id);
+    if (!role || role === 'VIEWER') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { title, description, coverColor, isPublic } = body;
 
@@ -59,10 +68,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+    const role = await getNotebookRole(user.id, params.id);
+    if (role !== 'OWNER') {
+      return NextResponse.json({ error: 'Only the owner can delete a notebook' }, { status: 403 });
+    }
+
     await prisma.notebook.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (error) {

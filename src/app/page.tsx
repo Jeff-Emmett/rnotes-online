@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
 import { SearchBar } from '@/components/SearchBar';
+import { UserMenu } from '@/components/UserMenu';
 
 interface NotebookData {
   id: string;
@@ -53,6 +54,7 @@ export default function HomePage() {
             >
               New Note
             </Link>
+            <UserMenu />
           </div>
         </div>
       </nav>

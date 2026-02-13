@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { pushShapesToCanvas } from '@/lib/canvas-sync';
+import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
 
 /**
  * POST /api/notebooks/[id]/canvas
@@ -9,10 +10,18 @@ import { pushShapesToCanvas } from '@/lib/canvas-sync';
  * with initial shapes from the notebook's notes.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+    const role = await getNotebookRole(user.id, params.id);
+    if (!role || role === 'VIEWER') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const notebook = await prisma.notebook.findUnique({
       where: { id: params.id },
       include: {

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { UserMenu } from '@/components/UserMenu';
+import { authFetch } from '@/lib/authFetch';
 
 const COVER_COLORS = [
   '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6',
@@ -22,7 +24,7 @@ export default function NewNotebookPage() {
 
     setSaving(true);
     try {
-      const res = await fetch('/api/notebooks', {
+      const res = await authFetch('/api/notebooks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, description, coverColor }),
@@ -51,6 +53,7 @@ export default function NewNotebookPage() {
           <Link href="/notebooks" className="text-slate-400 hover:text-white transition-colors">Notebooks</Link>
           <span className="text-slate-600">/</span>
           <span className="text-white">New</span>
+          <div className="ml-auto"><UserMenu /></div>
         </div>
       </nav>
 

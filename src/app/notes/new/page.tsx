@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
 import { FileUpload } from '@/components/FileUpload';
+import { UserMenu } from '@/components/UserMenu';
+import { authFetch } from '@/lib/authFetch';
 
 const NOTE_TYPES = [
   { value: 'NOTE', label: 'Note', desc: 'Rich text note' },
@@ -83,7 +85,7 @@ function NewNoteForm() {
         ? `/api/notebooks/${notebookId}/notes`
         : '/api/notes';
 
-      const res = await fetch(endpoint, {
+      const res = await authFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -115,6 +117,7 @@ function NewNoteForm() {
           </Link>
           <span className="text-slate-600">/</span>
           <span className="text-white">New Note</span>
+          <div className="ml-auto"><UserMenu /></div>
         </div>
       </nav>
 

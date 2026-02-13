@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripHtml } from '@/lib/strip-html';
+import { requireAuth, isAuthed } from '@/lib/auth';
 
 export async function GET(
   _request: NextRequest,
@@ -32,6 +33,22 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+
+    // Verify the user is the author
+    const existing = await prisma.note.findUnique({
+      where: { id: params.id },
+      select: { authorId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+    if (existing.authorId && existing.authorId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { title, content, type, url, language, isPinned, notebookId, tags } = body;
 
@@ -84,10 +101,25 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+
+    const existing = await prisma.note.findUnique({
+      where: { id: params.id },
+      select: { authorId: true },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+    if (existing.authorId && existing.authorId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     await prisma.note.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (error) {

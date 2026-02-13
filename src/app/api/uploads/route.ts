@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { nanoid } from 'nanoid';
+import { requireAuth, isAuthed } from '@/lib/auth';
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads';
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -26,6 +27,8 @@ function sanitizeFilename(name: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 

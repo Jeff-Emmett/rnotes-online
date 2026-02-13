@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { authFetch } from '@/lib/authFetch';
 
 interface UploadResult {
   url: string;
@@ -36,7 +37,7 @@ export function FileUpload({ onUpload, accept, maxSize = 50 * 1024 * 1024, class
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/uploads', {
+      const res = await authFetch('/api/uploads', {
         method: 'POST',
         body: formData,
       });

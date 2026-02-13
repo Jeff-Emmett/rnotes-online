@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { NoteCard } from '@/components/NoteCard';
 import { CanvasEmbed } from '@/components/CanvasEmbed';
+import { UserMenu } from '@/components/UserMenu';
+import { authFetch } from '@/lib/authFetch';
 
 interface NoteData {
   id: string;
@@ -53,7 +55,7 @@ export default function NotebookDetailPage() {
     if (creatingCanvas) return;
     setCreatingCanvas(true);
     try {
-      const res = await fetch(`/api/notebooks/${params.id}/canvas`, { method: 'POST' });
+      const res = await authFetch(`/api/notebooks/${params.id}/canvas`, { method: 'POST' });
       if (res.ok) {
         fetchNotebook();
         setShowCanvas(true);
@@ -67,7 +69,7 @@ export default function NotebookDetailPage() {
 
   const handleDelete = async () => {
     if (!confirm('Delete this notebook and all its notes?')) return;
-    await fetch(`/api/notebooks/${params.id}`, { method: 'DELETE' });
+    await authFetch(`/api/notebooks/${params.id}`, { method: 'DELETE' });
     router.push('/notebooks');
   };
 
@@ -142,6 +144,7 @@ export default function NotebookDetailPage() {
             >
               Delete
             </button>
+            <UserMenu />
           </div>
         </div>
       </nav>

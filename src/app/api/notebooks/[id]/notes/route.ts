@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripHtml } from '@/lib/strip-html';
+import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
 
 export async function GET(
   _request: NextRequest,
@@ -27,6 +28,14 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
+    const role = await getNotebookRole(user.id, params.id);
+    if (!role || role === 'VIEWER') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { title, content, type, url, language, tags, fileUrl, mimeType, fileSize } = body;
 
@@ -54,6 +63,7 @@ export async function POST(
     const note = await prisma.note.create({
       data: {
         notebookId: params.id,
+        authorId: user.id,
         title: title.trim(),
         content: content || '',
         contentPlain,

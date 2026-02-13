@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
 import { TagBadge } from '@/components/TagBadge';
+import { UserMenu } from '@/components/UserMenu';
+import { authFetch } from '@/lib/authFetch';
 
 const TYPE_COLORS: Record<string, string> = {
   NOTE: 'bg-amber-500/20 text-amber-400',
@@ -60,7 +62,7 @@ export default function NoteDetailPage() {
     if (saving) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/notes/${params.id}`, {
+      const res = await authFetch(`/api/notes/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: editTitle, content: editContent }),
@@ -79,7 +81,7 @@ export default function NoteDetailPage() {
 
   const handleTogglePin = async () => {
     if (!note) return;
-    const res = await fetch(`/api/notes/${params.id}`, {
+    const res = await authFetch(`/api/notes/${params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isPinned: !note.isPinned }),
@@ -92,7 +94,7 @@ export default function NoteDetailPage() {
 
   const handleDelete = async () => {
     if (!confirm('Delete this note?')) return;
-    await fetch(`/api/notes/${params.id}`, { method: 'DELETE' });
+    await authFetch(`/api/notes/${params.id}`, { method: 'DELETE' });
     if (note?.notebook) {
       router.push(`/notebooks/${note.notebook.id}`);
     } else {
@@ -185,6 +187,7 @@ export default function NoteDetailPage() {
             >
               Delete
             </button>
+            <UserMenu />
           </div>
         </div>
       </nav>

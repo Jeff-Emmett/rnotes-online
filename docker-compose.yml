@@ -1,6 +1,8 @@
 services:
   rnotes:
-    build: .
+    build:
+      context: ..
+      dockerfile: rnotes-online/Dockerfile
     container_name: rnotes-online
     restart: unless-stopped
     environment:

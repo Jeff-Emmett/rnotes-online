@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripHtml } from '@/lib/strip-html';
 import { NoteType } from '@prisma/client';
+import { requireAuth, isAuthed } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,6 +39,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (!isAuthed(auth)) return auth;
+    const { user } = auth;
     const body = await request.json();
     const { title, content, type, notebookId, url, language, tags, fileUrl, mimeType, fileSize } = body;
 
@@ -69,6 +73,7 @@ export async function POST(request: NextRequest) {
         contentPlain,
         type: type || 'NOTE',
         notebookId: notebookId || null,
+        authorId: user.id,
         url: url || null,
         language: language || null,
         fileUrl: fileUrl || null,
