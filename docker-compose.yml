@@ -1,0 +1,64 @@
+services:
+  rnotes:
+    build: .
+    container_name: rnotes-online
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://rnotes:${DB_PASSWORD}@rnotes-postgres:5432/rnotes
+      - NEXT_PUBLIC_RSPACE_URL=${NEXT_PUBLIC_RSPACE_URL:-https://rspace.online}
+      - RSPACE_INTERNAL_URL=${RSPACE_INTERNAL_URL:-http://rspace-online:3000}
+      - NEXT_PUBLIC_ENCRYPTID_SERVER_URL=${NEXT_PUBLIC_ENCRYPTID_SERVER_URL:-https://encryptid.jeffemmett.com}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rnotes.rule=Host(`rnotes.online`) || Host(`www.rnotes.online`)"
+      - "traefik.http.services.rnotes.loadbalancer.server.port=3000"
+    networks:
+      - traefik-public
+      - rnotes-internal
+    depends_on:
+      rnotes-postgres:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/nextjs/.npm
+
+  rnotes-postgres:
+    image: postgres:16-alpine
+    container_name: rnotes-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=rnotes
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=rnotes
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rnotes-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rnotes -d rnotes"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  traefik-public:
+    external: true
+  rnotes-internal:
+    internal: true
+
+volumes:
+  postgres_data:
