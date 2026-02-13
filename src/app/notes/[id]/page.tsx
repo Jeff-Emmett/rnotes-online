@@ -269,13 +269,10 @@ export default function NoteDetailPage() {
                 </code>
               </pre>
             ) : (
-              <div className="prose prose-invert prose-sm max-w-none">
-                <div
-                  className="whitespace-pre-wrap text-slate-300 leading-relaxed"
-                >
-                  {note.content}
-                </div>
-              </div>
+              <div
+                className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: note.content }}
+              />
             )}
           </div>
         )}
