@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e5e5e5;
+      font-size: 13px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #171717;
+      border-bottom: 1px solid #262626;
+    }
+    .header .brand {
+      font-weight: 700;
+      font-size: 14px;
+      color: #f59e0b;
+    }
+    .header .user {
+      font-size: 11px;
+      color: #a3a3a3;
+    }
+    .header .user.not-authed {
+      color: #ef4444;
+    }
+
+    .auth-warning {
+      padding: 10px 14px;
+      background: #451a03;
+      border-bottom: 1px solid #78350f;
+      text-align: center;
+      font-size: 12px;
+      color: #fbbf24;
+    }
+    .auth-warning a {
+      color: #f59e0b;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .current-page {
+      padding: 10px 14px;
+      border-bottom: 1px solid #262626;
+    }
+    .current-page .title {
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .current-page .url {
+      font-size: 11px;
+      color: #737373;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .controls {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: #a3a3a3;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      background: #171717;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      color: #e5e5e5;
+      font-size: 12px;
+      outline: none;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: #f59e0b;
+    }
+
+    .actions {
+      padding: 0 14px 10px;
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    .btn-primary {
+      background: #f59e0b;
+      color: #0a0a0a;
+    }
+    .btn-secondary {
+      background: #262626;
+      color: #e5e5e5;
+      border: 1px solid #404040;
+    }
+
+    .status {
+      margin: 0 14px 10px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+    }
+    .status.success {
+      background: #052e16;
+      border: 1px solid #166534;
+      color: #4ade80;
+      display: block;
+    }
+    .status.error {
+      background: #450a0a;
+      border: 1px solid #991b1b;
+      color: #fca5a5;
+      display: block;
+    }
+    .status.loading {
+      background: #172554;
+      border: 1px solid #1e40af;
+      color: #93c5fd;
+      display: block;
+    }
+
+    .footer {
+      padding: 8px 14px;
+      border-top: 1px solid #262626;
+      text-align: center;
+    }
+    .footer a {
+      color: #737373;
+      text-decoration: none;
+      font-size: 11px;
+    }
+    .footer a:hover {
+      color: #f59e0b;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="brand">rNotes Clipper</span>
+    <span class="user" id="userStatus">...</span>
+  </div>
+
+  <div id="authWarning" class="auth-warning" style="display: none;">
+    Sign in to clip pages. <a id="openSettings">Open Settings</a>
+  </div>
+
+  <div class="current-page">
+    <div class="title" id="pageTitle">Loading...</div>
+    <div class="url" id="pageUrl"></div>
+  </div>
+
+  <div class="controls">
+    <div>
+      <label for="notebook">Notebook</label>
+      <select id="notebook">
+        <option value="">No notebook</option>
+      </select>
+    </div>
+    <div>
+      <label for="tags">Tags (comma-separated)</label>
+      <input type="text" id="tags" placeholder="web-clip, research, ..." />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="clipPageBtn" disabled>
+      <span>+</span> Clip Page
+    </button>
+    <button class="btn-secondary" id="clipSelectionBtn" disabled>
+      <span>T</span> Clip Selection
+    </button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <div class="footer">
+    <a href="#" id="optionsLink">Settings</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

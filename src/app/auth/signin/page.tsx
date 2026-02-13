@@ -9,26 +9,28 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/';
+  const isExtension = searchParams.get('extension') === 'true';
   const { isAuthenticated, loading: authLoading, login, register } = useEncryptID();
 
   const [mode, setMode] = useState<'signin' | 'register'>('signin');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (skip if extension mode — show token instead)
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
+    if (isAuthenticated && !authLoading && !isExtension) {
       router.push(returnUrl);
     }
-  }, [isAuthenticated, authLoading, router, returnUrl]);
+  }, [isAuthenticated, authLoading, router, returnUrl, isExtension]);
 
   const handleSignIn = async () => {
     setError('');
     setBusy(true);
     try {
       await login();
-      router.push(returnUrl);
+      if (!isExtension) router.push(returnUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed. Make sure you have a registered passkey.');
     } finally {
@@ -45,7 +47,7 @@ function SignInForm() {
     setBusy(true);
     try {
       await register(username.trim());
-      router.push(returnUrl);
+      if (!isExtension) router.push(returnUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed.');
     } finally {
@@ -161,6 +163,33 @@ function SignInForm() {
               </>
             )}
           </button>
+
+          {/* Extension token display */}
+          {isExtension && isAuthenticated && (
+            <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <h3 className="text-sm font-semibold text-amber-400 mb-2">Extension Token</h3>
+              <p className="text-xs text-slate-400 mb-3">
+                Copy this token and paste it in the rNotes Web Clipper extension settings.
+              </p>
+              <textarea
+                readOnly
+                value={typeof window !== 'undefined' ? localStorage.getItem('encryptid_token') || '' : ''}
+                className="w-full h-20 px-3 py-2 bg-slate-900 border border-slate-700 rounded text-xs text-slate-300 font-mono resize-none focus:outline-none"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+              />
+              <button
+                onClick={() => {
+                  const token = localStorage.getItem('encryptid_token') || '';
+                  navigator.clipboard.writeText(token);
+                  setTokenCopied(true);
+                  setTimeout(() => setTokenCopied(false), 2000);
+                }}
+                className="mt-2 w-full py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg text-sm transition-colors"
+              >
+                {tokenCopied ? 'Copied!' : 'Copy to Clipboard'}
+              </button>
+            </div>
+          )}
 
           <p className="text-center text-xs text-slate-500 mt-6">
             Powered by EncryptID &mdash; passwordless, decentralized identity
