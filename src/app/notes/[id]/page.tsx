@@ -23,6 +23,9 @@ interface NoteData {
   type: string;
   url: string | null;
   language: string | null;
+  fileUrl: string | null;
+  mimeType: string | null;
+  fileSize: number | null;
   isPinned: boolean;
   canvasShapeId: string | null;
   createdAt: string;
@@ -210,6 +213,35 @@ export default function NoteDetailPage() {
           >
             {note.url}
           </a>
+        )}
+
+        {/* Uploaded file/image */}
+        {note.fileUrl && note.type === 'IMAGE' && (
+          <div className="mb-6 rounded-lg overflow-hidden border border-slate-700">
+            <img
+              src={note.fileUrl}
+              alt={note.title}
+              className="max-w-full max-h-[600px] object-contain mx-auto bg-slate-900"
+            />
+          </div>
+        )}
+        {note.fileUrl && note.type === 'FILE' && (
+          <div className="mb-6 flex items-center gap-3 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+            <svg className="w-8 h-8 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-white truncate">{note.fileUrl.split('/').pop()}</p>
+              {note.mimeType && <p className="text-xs text-slate-500">{note.mimeType}{note.fileSize ? ` · ${(note.fileSize / 1024).toFixed(1)} KB` : ''}</p>}
+            </div>
+            <a
+              href={note.fileUrl}
+              download
+              className="px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              Download
+            </a>
+          </div>
         )}
 
         {/* Content */}

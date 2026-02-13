@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, content, type, notebookId, url, language, tags } = body;
+    const { title, content, type, notebookId, url, language, tags, fileUrl, mimeType, fileSize } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -71,6 +71,9 @@ export async function POST(request: NextRequest) {
         notebookId: notebookId || null,
         url: url || null,
         language: language || null,
+        fileUrl: fileUrl || null,
+        mimeType: mimeType || null,
+        fileSize: fileSize || null,
         tags: {
           create: tagRecords.map((tag) => ({
             tagId: tag.id,

@@ -8,6 +8,8 @@ services:
       - NEXT_PUBLIC_RSPACE_URL=${NEXT_PUBLIC_RSPACE_URL:-https://rspace.online}
       - RSPACE_INTERNAL_URL=${RSPACE_INTERNAL_URL:-http://rspace-online:3000}
       - NEXT_PUBLIC_ENCRYPTID_SERVER_URL=${NEXT_PUBLIC_ENCRYPTID_SERVER_URL:-https://encryptid.jeffemmett.com}
+    volumes:
+      - uploads_data:/app/uploads
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.rnotes.rule=Host(`rnotes.online`) || Host(`www.rnotes.online`)"
@@ -62,3 +64,4 @@ networks:
 
 volumes:
   postgres_data:
+  uploads_data:

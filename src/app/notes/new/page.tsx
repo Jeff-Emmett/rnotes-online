@@ -4,14 +4,15 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
+import { FileUpload } from '@/components/FileUpload';
 
 const NOTE_TYPES = [
   { value: 'NOTE', label: 'Note', desc: 'Rich text note' },
   { value: 'CLIP', label: 'Clip', desc: 'Web clipping' },
   { value: 'BOOKMARK', label: 'Bookmark', desc: 'Save a URL' },
   { value: 'CODE', label: 'Code', desc: 'Code snippet' },
-  { value: 'IMAGE', label: 'Image', desc: 'Image URL' },
-  { value: 'FILE', label: 'File', desc: 'File reference' },
+  { value: 'IMAGE', label: 'Image', desc: 'Upload image' },
+  { value: 'FILE', label: 'File', desc: 'Upload file' },
 ];
 
 interface NotebookOption {
@@ -45,6 +46,9 @@ function NewNoteForm() {
   const [url, setUrl] = useState('');
   const [language, setLanguage] = useState('');
   const [tags, setTags] = useState('');
+  const [fileUrl, setFileUrl] = useState('');
+  const [mimeType, setMimeType] = useState('');
+  const [fileSize, setFileSize] = useState(0);
   const [notebookId, setNotebookId] = useState(preselectedNotebook || '');
   const [notebooks, setNotebooks] = useState<NotebookOption[]>([]);
   const [saving, setSaving] = useState(false);
@@ -71,6 +75,9 @@ function NewNoteForm() {
       if (notebookId) body.notebookId = notebookId;
       if (url) body.url = url;
       if (language) body.language = language;
+      if (fileUrl) body.fileUrl = fileUrl;
+      if (mimeType) body.mimeType = mimeType;
+      if (fileSize) body.fileSize = fileSize;
 
       const endpoint = notebookId
         ? `/api/notebooks/${notebookId}/notes`
@@ -93,7 +100,8 @@ function NewNoteForm() {
     }
   };
 
-  const showUrl = ['CLIP', 'BOOKMARK', 'IMAGE', 'FILE'].includes(type);
+  const showUrl = ['CLIP', 'BOOKMARK'].includes(type);
+  const showUpload = ['IMAGE', 'FILE'].includes(type);
   const showLanguage = type === 'CODE';
 
   return (
@@ -159,6 +167,53 @@ function NewNoteForm() {
                 placeholder="https://..."
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50"
               />
+            </div>
+          )}
+
+          {/* File upload */}
+          {showUpload && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                {type === 'IMAGE' ? 'Upload Image' : 'Upload File'}
+              </label>
+              {fileUrl ? (
+                <div className="flex items-center gap-3 p-3 bg-slate-800/50 border border-slate-700 rounded-lg">
+                  {type === 'IMAGE' && (
+                    <img src={fileUrl} alt="Preview" className="w-16 h-16 object-cover rounded" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">{fileUrl.split('/').pop()}</p>
+                    <p className="text-xs text-slate-500">{mimeType} &middot; {(fileSize / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setFileUrl(''); setMimeType(''); setFileSize(0); }}
+                    className="text-slate-400 hover:text-red-400 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <FileUpload
+                  accept={type === 'IMAGE' ? 'image/*' : undefined}
+                  onUpload={(result) => {
+                    setFileUrl(result.url);
+                    setMimeType(result.mimeType);
+                    setFileSize(result.size);
+                    if (!title) setTitle(result.originalName);
+                  }}
+                />
+              )}
+              <div className="mt-2">
+                <label className="block text-xs text-slate-500 mb-1">Or paste a URL</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-amber-500/50"
+                />
+              </div>
             </div>
           )}
 
