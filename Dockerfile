@@ -5,15 +5,15 @@ FROM base AS deps
 WORKDIR /app
 COPY rnotes-online/package.json rnotes-online/package-lock.json* ./
 COPY rnotes-online/prisma ./prisma/
-# Copy local SDK dependency
-COPY encryptid-sdk ./encryptid-sdk/
+# Copy local SDK dependency to /encryptid-sdk (package.json references file:../encryptid-sdk)
+COPY encryptid-sdk /encryptid-sdk/
 RUN npm ci || npm install
 
 # Build stage
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/encryptid-sdk ./encryptid-sdk
+COPY --from=deps /encryptid-sdk /encryptid-sdk
 COPY rnotes-online/ .
 RUN npx prisma generate
 RUN npm run build
