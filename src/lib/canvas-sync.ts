@@ -23,10 +23,17 @@ export async function pushShapesToCanvas(
   rspaceUrl?: string
 ): Promise<void> {
   const baseUrl = rspaceUrl || process.env.RSPACE_INTERNAL_URL || 'http://rspace-online:3000';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+  // Use internal API key for service-to-service auth
+  const internalKey = process.env.RSPACE_INTERNAL_KEY;
+  if (internalKey) {
+    headers['X-Internal-Key'] = internalKey;
+  }
 
   const response = await fetch(`${baseUrl}/api/communities/${canvasSlug}/shapes`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ shapes }),
   });
 
