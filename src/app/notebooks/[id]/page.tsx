@@ -7,6 +7,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { CanvasEmbed } from '@/components/CanvasEmbed';
 import { UserMenu } from '@/components/UserMenu';
 import { authFetch } from '@/lib/authFetch';
+import type { CanvasShapeMessage } from '@/lib/canvas-sync';
 
 interface NoteData {
   id: string;
@@ -49,6 +50,23 @@ export default function NotebookDetailPage() {
 
   useEffect(() => {
     fetchNotebook();
+  }, [fetchNotebook]);
+
+  const handleShapeUpdate = useCallback(async (message: CanvasShapeMessage) => {
+    try {
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shapeId: message.shapeId,
+          type: message.type,
+          data: message.data,
+        }),
+      });
+      fetchNotebook();
+    } catch (err) {
+      console.error('Canvas sync error:', err);
+    }
   }, [fetchNotebook]);
 
   const handleCreateCanvas = async () => {
@@ -98,51 +116,54 @@ export default function NotebookDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3">
+      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Link href="/" className="flex-shrink-0">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
                 rN
               </div>
             </Link>
-            <span className="text-slate-600">/</span>
-            <Link href="/notebooks" className="text-slate-400 hover:text-white transition-colors">Notebooks</Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-white">{notebook.title}</span>
+            <span className="text-slate-600 hidden sm:inline">/</span>
+            <Link href="/notebooks" className="text-slate-400 hover:text-white transition-colors hidden sm:inline">Notebooks</Link>
+            <span className="text-slate-600 hidden sm:inline">/</span>
+            <span className="text-white truncate">{notebook.title}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             {notebook.canvasSlug ? (
               <button
                 onClick={() => setShowCanvas(!showCanvas)}
-                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                className={`px-2 md:px-3 py-1.5 text-sm rounded-lg transition-colors ${
                   showCanvas
                     ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                     : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'
                 }`}
               >
-                {showCanvas ? 'Hide Canvas' : 'Show Canvas'}
+                <span className="hidden sm:inline">{showCanvas ? 'Hide Canvas' : 'Show Canvas'}</span>
+                <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
               </button>
             ) : (
               <button
                 onClick={handleCreateCanvas}
                 disabled={creatingCanvas}
-                className="px-3 py-1.5 text-sm bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors"
+                className="px-2 md:px-3 py-1.5 text-sm bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors hidden sm:inline-flex"
               >
                 {creatingCanvas ? 'Creating...' : 'Create Canvas'}
               </button>
             )}
             <Link
               href={`/notes/new?notebookId=${notebook.id}`}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
+              className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
             >
-              Add Note
+              <span className="hidden sm:inline">Add Note</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </Link>
             <button
               onClick={handleDelete}
-              className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 border border-red-900/30 hover:border-red-800 rounded-lg transition-colors"
+              className="px-2 md:px-3 py-1.5 text-sm text-red-400 hover:text-red-300 border border-red-900/30 hover:border-red-800 rounded-lg transition-colors"
             >
-              Delete
+              <span className="hidden sm:inline">Delete</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
             <UserMenu />
           </div>
@@ -151,12 +172,12 @@ export default function NotebookDetailPage() {
 
       <div className={`flex ${showCanvas ? 'gap-0' : ''}`}>
         {/* Notes panel */}
-        <main className={`${showCanvas ? 'w-3/5' : 'w-full'} max-w-6xl mx-auto px-6 py-8`}>
+        <main className={`${showCanvas ? 'hidden md:block md:w-3/5' : 'w-full'} max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8`}>
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: notebook.coverColor }} />
-              <h1 className="text-3xl font-bold text-white">{notebook.title}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-white">{notebook.title}</h1>
             </div>
             {notebook.description && (
               <p className="text-slate-400 ml-7">{notebook.description}</p>
@@ -194,7 +215,7 @@ export default function NotebookDetailPage() {
               {tab === 'pinned' ? 'No pinned notes' : 'No notes yet. Add one!'}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredNotes.map((note) => (
                 <NoteCard
                   key={note.id}
@@ -216,10 +237,19 @@ export default function NotebookDetailPage() {
           )}
         </main>
 
-        {/* Canvas sidebar */}
+        {/* Canvas sidebar — full screen on mobile, split on desktop */}
         {showCanvas && notebook.canvasSlug && (
-          <div className="w-2/5 border-l border-slate-800 sticky top-0 h-screen">
-            <CanvasEmbed canvasSlug={notebook.canvasSlug} className="h-full" />
+          <div className="fixed inset-0 z-40 md:relative md:inset-auto md:w-2/5 md:z-auto border-l border-slate-800 md:sticky md:top-0 md:h-screen bg-[#0a0a0a]">
+            <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-slate-800">
+              <span className="text-sm font-medium text-white">Canvas</span>
+              <button
+                onClick={() => setShowCanvas(false)}
+                className="p-1 text-slate-400 hover:text-white"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <CanvasEmbed canvasSlug={notebook.canvasSlug} className="h-full" onShapeUpdate={handleShapeUpdate} />
           </div>
         )}
       </div>

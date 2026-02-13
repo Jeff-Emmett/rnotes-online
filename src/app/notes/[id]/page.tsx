@@ -123,44 +123,45 @@ export default function NoteDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3">
+      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <Link href="/" className="flex-shrink-0">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
                 rN
               </div>
             </Link>
-            <span className="text-slate-600">/</span>
+            <span className="text-slate-600 hidden sm:inline">/</span>
             {note.notebook ? (
               <>
-                <Link href={`/notebooks/${note.notebook.id}`} className="text-slate-400 hover:text-white transition-colors">
+                <Link href={`/notebooks/${note.notebook.id}`} className="text-slate-400 hover:text-white transition-colors hidden sm:inline truncate max-w-[120px]">
                   {note.notebook.title}
                 </Link>
-                <span className="text-slate-600">/</span>
+                <span className="text-slate-600 hidden sm:inline">/</span>
               </>
             ) : null}
-            <span className="text-white truncate max-w-[200px]">{note.title}</span>
+            <span className="text-white truncate max-w-[120px] md:max-w-[200px]">{note.title}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
             <button
               onClick={handleTogglePin}
-              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+              className={`px-2 md:px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                 note.isPinned
                   ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                   : 'text-slate-400 border-slate-700 hover:text-white'
               }`}
             >
-              {note.isPinned ? 'Unpin' : 'Pin to Canvas'}
+              <span className="hidden sm:inline">{note.isPinned ? 'Unpin' : 'Pin to Canvas'}</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
             </button>
             {editing ? (
               <>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-3 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg transition-colors"
+                  className="px-2 md:px-3 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg transition-colors"
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? '...' : 'Save'}
                 </button>
                 <button
                   onClick={() => {
@@ -168,7 +169,7 @@ export default function NoteDetailPage() {
                     setEditTitle(note.title);
                     setEditContent(note.content);
                   }}
-                  className="px-3 py-1.5 text-sm text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors"
+                  className="px-2 md:px-3 py-1.5 text-sm text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors hidden sm:inline-flex"
                 >
                   Cancel
                 </button>
@@ -176,25 +177,26 @@ export default function NoteDetailPage() {
             ) : (
               <button
                 onClick={() => setEditing(true)}
-                className="px-3 py-1.5 text-sm text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors"
+                className="px-2 md:px-3 py-1.5 text-sm text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors"
               >
                 Edit
               </button>
             )}
             <button
               onClick={handleDelete}
-              className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 border border-red-900/30 rounded-lg transition-colors"
+              className="px-2 md:px-3 py-1.5 text-sm text-red-400 hover:text-red-300 border border-red-900/30 rounded-lg transition-colors"
             >
-              Delete
+              <span className="hidden sm:inline">Delete</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
             <UserMenu />
           </div>
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* Metadata */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
           <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${TYPE_COLORS[note.type] || TYPE_COLORS.NOTE}`}>
             {note.type}
           </span>
@@ -264,7 +266,7 @@ export default function NoteDetailPage() {
           </div>
         ) : (
           <div>
-            <h1 className="text-3xl font-bold text-white mb-6">{note.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">{note.title}</h1>
             {note.type === 'CODE' ? (
               <pre className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 overflow-x-auto">
                 <code className="text-sm text-slate-200 font-mono">

@@ -29,34 +29,39 @@ export default function NotebooksPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-6 py-4">
+      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
                 rN
               </div>
-              <span className="text-lg font-semibold text-white">rNotes</span>
+              <span className="text-lg font-semibold text-white hidden sm:inline">rNotes</span>
             </Link>
             <span className="text-slate-600">/</span>
             <span className="text-slate-400">Notebooks</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-64">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="hidden md:block w-64">
               <SearchBar />
             </div>
             <Link
               href="/notebooks/new"
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
+              className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
             >
-              New Notebook
+              <span className="hidden sm:inline">New Notebook</span>
+              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </Link>
             <UserMenu />
           </div>
         </div>
       </nav>
+      {/* Mobile search */}
+      <div className="md:hidden px-4 py-3 border-b border-slate-800">
+        <SearchBar />
+      </div>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <svg className="animate-spin h-8 w-8 text-amber-400" viewBox="0 0 24 24">
@@ -75,7 +80,7 @@ export default function NotebooksPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {notebooks.map((nb) => (
               <NotebookCard
                 key={nb.id}
