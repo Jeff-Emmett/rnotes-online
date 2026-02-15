@@ -160,12 +160,24 @@ export default function HomePage() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 px-4 md:px-6 py-6 md:py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
-          <span>rNotes.online — Part of the r* ecosystem</span>
-          <a href="https://rspace.online" className="hover:text-amber-400 transition-colors">
-            rSpace.online
-          </a>
+      <footer className="border-t border-slate-800 py-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-500 mb-4">
+            <span className="font-medium text-slate-400">r* Ecosystem</span>
+            <a href="https://rspace.online" className="hover:text-slate-300 transition-colors">🌌 rSpace</a>
+            <a href="https://rmaps.online" className="hover:text-slate-300 transition-colors">🗺️ rMaps</a>
+            <a href="https://rnotes.online" className="hover:text-slate-300 transition-colors font-medium text-slate-300">📝 rNotes</a>
+            <a href="https://rvote.online" className="hover:text-slate-300 transition-colors">🗳️ rVote</a>
+            <a href="https://rfunds.online" className="hover:text-slate-300 transition-colors">💰 rFunds</a>
+            <a href="https://rtrips.online" className="hover:text-slate-300 transition-colors">✈️ rTrips</a>
+            <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">🛒 rCart</a>
+            <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">💼 rWallet</a>
+            <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">📁 rFiles</a>
+            <a href="https://rnetwork.online" className="hover:text-slate-300 transition-colors">🌐 rNetwork</a>
+          </div>
+          <p className="text-center text-xs text-slate-600">
+            Part of the r* ecosystem — collaborative tools for communities.
+          </p>
         </div>
       </footer>
     </div>
