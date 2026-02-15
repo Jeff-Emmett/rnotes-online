@@ -181,7 +181,7 @@ function renderInline(text: string): React.ReactNode {
 
   while (remaining.length > 0) {
     // Bold **text**
-    const boldMatch = remaining.match(/^(.*?)\*\*(.+?)\*\*(.*)$/s)
+    const boldMatch = remaining.match(/^([\s\S]*?)\*\*([\s\S]+?)\*\*([\s\S]*)$/)
     if (boldMatch) {
       if (boldMatch[1]) parts.push(<span key={key++}>{boldMatch[1]}</span>)
       parts.push(<strong key={key++} className="text-white font-medium">{boldMatch[2]}</strong>)
@@ -190,7 +190,7 @@ function renderInline(text: string): React.ReactNode {
     }
 
     // Italic *text*
-    const italicMatch = remaining.match(/^(.*?)\*(.+?)\*(.*)$/s)
+    const italicMatch = remaining.match(/^([\s\S]*?)\*([\s\S]+?)\*([\s\S]*)$/)
     if (italicMatch) {
       if (italicMatch[1]) parts.push(<span key={key++}>{italicMatch[1]}</span>)
       parts.push(<em key={key++} className="text-slate-300 italic">{italicMatch[2]}</em>)
@@ -199,7 +199,7 @@ function renderInline(text: string): React.ReactNode {
     }
 
     // Inline code `text`
-    const codeMatch = remaining.match(/^(.*?)`(.+?)`(.*)$/s)
+    const codeMatch = remaining.match(/^([\s\S]*?)`([\s\S]+?)`([\s\S]*)$/)
     if (codeMatch) {
       if (codeMatch[1]) parts.push(<span key={key++}>{codeMatch[1]}</span>)
       parts.push(
