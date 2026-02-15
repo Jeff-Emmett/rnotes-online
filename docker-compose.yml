@@ -12,6 +12,7 @@ services:
       - NEXT_PUBLIC_ENCRYPTID_SERVER_URL=${NEXT_PUBLIC_ENCRYPTID_SERVER_URL:-https://encryptid.jeffemmett.com}
       - RSPACE_INTERNAL_KEY=${RSPACE_INTERNAL_KEY}
       - VOICE_API_URL=${VOICE_API_URL:-http://voice-command-api:8000}
+      - NEXT_PUBLIC_VOICE_WS_URL=${NEXT_PUBLIC_VOICE_WS_URL:-wss://voice.jeffemmett.com}
     volumes:
       - uploads_data:/app/uploads
     labels:

@@ -47,6 +47,8 @@ export default function NoteDetailPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [diarizing, setDiarizing] = useState(false);
+  const [speakers, setSpeakers] = useState<{ speaker: string; start: number; end: number }[] | null>(null);
 
   useEffect(() => {
     fetch(`/api/notes/${params.id}`)
@@ -101,6 +103,35 @@ export default function NoteDetailPage() {
       router.push(`/notebooks/${note.notebook.id}`);
     } else {
       router.push('/');
+    }
+  };
+
+  const handleDiarize = async () => {
+    if (!note?.fileUrl || diarizing) return;
+    setDiarizing(true);
+    try {
+      // Fetch the audio file from the server
+      const audioRes = await fetch(note.fileUrl);
+      const audioBlob = await audioRes.blob();
+
+      const form = new FormData();
+      form.append('audio', audioBlob, 'recording.webm');
+
+      const res = await authFetch('/api/voice/diarize', {
+        method: 'POST',
+        body: form,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        setSpeakers(result.speakers || []);
+      } else {
+        console.error('Diarization failed');
+      }
+    } catch (error) {
+      console.error('Diarization error:', error);
+    } finally {
+      setDiarizing(false);
     }
   };
 
@@ -257,7 +288,40 @@ export default function NoteDetailPage() {
               {note.duration != null && <span>{Math.floor(note.duration / 60)}:{(note.duration % 60).toString().padStart(2, '0')}</span>}
               {note.mimeType && <span>{note.mimeType}</span>}
               {note.fileSize && <span>{(note.fileSize / 1024).toFixed(1)} KB</span>}
+              {!speakers && (
+                <button
+                  onClick={handleDiarize}
+                  disabled={diarizing}
+                  className="ml-auto px-3 py-1 text-xs rounded-lg border border-slate-600 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
+                >
+                  {diarizing ? 'Identifying speakers...' : 'Identify speakers'}
+                </button>
+              )}
             </div>
+            {speakers && speakers.length > 0 && (
+              <div className="pt-2 border-t border-slate-700 space-y-1.5">
+                <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">Speakers</div>
+                {speakers.map((s, i) => {
+                  const colors: Record<string, string> = {
+                    SPEAKER_00: 'border-blue-500/50 text-blue-300',
+                    SPEAKER_01: 'border-green-500/50 text-green-300',
+                    SPEAKER_02: 'border-purple-500/50 text-purple-300',
+                    SPEAKER_03: 'border-orange-500/50 text-orange-300',
+                  };
+                  const color = colors[s.speaker] || 'border-slate-500/50 text-slate-300';
+                  return (
+                    <div key={i} className={`text-xs px-2 py-1.5 rounded border-l-2 bg-slate-800/50 ${color}`}>
+                      <span className="font-medium">{s.speaker.replace('SPEAKER_', 'Speaker ')}</span>
+                      <span className="text-slate-500 ml-2">
+                        {Math.floor(s.start / 60)}:{Math.floor(s.start % 60).toString().padStart(2, '0')}
+                        &ndash;
+                        {Math.floor(s.end / 60)}:{Math.floor(s.end % 60).toString().padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
