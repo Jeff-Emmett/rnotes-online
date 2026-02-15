@@ -11,6 +11,7 @@ services:
       - RSPACE_INTERNAL_URL=${RSPACE_INTERNAL_URL:-http://rspace-online:3000}
       - NEXT_PUBLIC_ENCRYPTID_SERVER_URL=${NEXT_PUBLIC_ENCRYPTID_SERVER_URL:-https://encryptid.jeffemmett.com}
       - RSPACE_INTERNAL_KEY=${RSPACE_INTERNAL_KEY}
+      - VOICE_API_URL=${VOICE_API_URL:-http://voice-command-api:8000}
     volumes:
       - uploads_data:/app/uploads
     labels:

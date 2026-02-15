@@ -79,6 +79,7 @@ model Note {
   mimeType      String?
   fileUrl       String?
   fileSize      Int?
+  duration      Int?
   isPinned      Boolean  @default(false)
   canvasShapeId String?
   sortOrder     Int      @default(0)
@@ -100,6 +101,7 @@ enum NoteType {
   CODE
   IMAGE
   FILE
+  AUDIO
 }
 
 // ─── Tags ───────────────────────────────────────────────────────────

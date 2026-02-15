@@ -10,6 +10,7 @@ const TYPE_COLORS: Record<string, string> = {
   CODE: 'bg-green-500/20 text-green-400',
   IMAGE: 'bg-pink-500/20 text-pink-400',
   FILE: 'bg-slate-500/20 text-slate-400',
+  AUDIO: 'bg-red-500/20 text-red-400',
 };
 
 interface NoteCardProps {

@@ -19,6 +19,9 @@ const ALLOWED_MIME_TYPES = new Set([
   // Code
   'text/javascript', 'text/typescript', 'text/html', 'text/css',
   'application/x-python-code', 'text/x-python',
+  // Audio
+  'audio/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg',
+  'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/flac',
 ]);
 
 function sanitizeFilename(name: string): string {

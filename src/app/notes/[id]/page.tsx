@@ -15,6 +15,7 @@ const TYPE_COLORS: Record<string, string> = {
   CODE: 'bg-green-500/20 text-green-400',
   IMAGE: 'bg-pink-500/20 text-pink-400',
   FILE: 'bg-slate-500/20 text-slate-400',
+  AUDIO: 'bg-red-500/20 text-red-400',
 };
 
 interface NoteData {
@@ -28,6 +29,7 @@ interface NoteData {
   fileUrl: string | null;
   mimeType: string | null;
   fileSize: number | null;
+  duration: number | null;
   isPinned: boolean;
   canvasShapeId: string | null;
   createdAt: string;
@@ -246,6 +248,16 @@ export default function NoteDetailPage() {
             >
               Download
             </a>
+          </div>
+        )}
+        {note.fileUrl && note.type === 'AUDIO' && (
+          <div className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg space-y-3">
+            <audio controls src={note.fileUrl} className="w-full" />
+            <div className="flex items-center gap-3 text-xs text-slate-500">
+              {note.duration != null && <span>{Math.floor(note.duration / 60)}:{(note.duration % 60).toString().padStart(2, '0')}</span>}
+              {note.mimeType && <span>{note.mimeType}</span>}
+              {note.fileSize && <span>{(note.fileSize / 1024).toFixed(1)} KB</span>}
+            </div>
           </div>
         )}
 

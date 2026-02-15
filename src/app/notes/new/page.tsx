@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
 import { FileUpload } from '@/components/FileUpload';
+import { VoiceRecorder } from '@/components/VoiceRecorder';
 import { UserMenu } from '@/components/UserMenu';
 import { authFetch } from '@/lib/authFetch';
 
@@ -15,6 +16,7 @@ const NOTE_TYPES = [
   { value: 'CODE', label: 'Code', desc: 'Code snippet' },
   { value: 'IMAGE', label: 'Image', desc: 'Upload image' },
   { value: 'FILE', label: 'File', desc: 'Upload file' },
+  { value: 'AUDIO', label: 'Audio', desc: 'Voice recording' },
 ];
 
 interface NotebookOption {
@@ -51,6 +53,7 @@ function NewNoteForm() {
   const [fileUrl, setFileUrl] = useState('');
   const [mimeType, setMimeType] = useState('');
   const [fileSize, setFileSize] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [notebookId, setNotebookId] = useState(preselectedNotebook || '');
   const [notebooks, setNotebooks] = useState<NotebookOption[]>([]);
   const [saving, setSaving] = useState(false);
@@ -80,6 +83,7 @@ function NewNoteForm() {
       if (fileUrl) body.fileUrl = fileUrl;
       if (mimeType) body.mimeType = mimeType;
       if (fileSize) body.fileSize = fileSize;
+      if (duration) body.duration = duration;
 
       const endpoint = notebookId
         ? `/api/notebooks/${notebookId}/notes`
@@ -105,6 +109,7 @@ function NewNoteForm() {
   const showUrl = ['CLIP', 'BOOKMARK'].includes(type);
   const showUpload = ['IMAGE', 'FILE'].includes(type);
   const showLanguage = type === 'CODE';
+  const showRecorder = type === 'AUDIO';
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -234,16 +239,43 @@ function NewNoteForm() {
             </div>
           )}
 
+          {/* Voice recorder */}
+          {showRecorder && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Recording</label>
+              <VoiceRecorder
+                onResult={(result) => {
+                  setFileUrl(result.fileUrl);
+                  setMimeType(result.mimeType);
+                  setFileSize(result.fileSize);
+                  setDuration(result.duration);
+                  setContent(result.transcript);
+                  if (!title) setTitle(`Voice note ${new Date().toLocaleDateString()}`);
+                }}
+              />
+              {content && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Transcript</label>
+                  <div className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-300 text-sm leading-relaxed">
+                    {content}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Content */}
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
-            <NoteEditor
-              value={content}
-              onChange={setContent}
-              type={type}
-              placeholder={type === 'CODE' ? 'Paste your code here...' : 'Write in Markdown...'}
-            />
-          </div>
+          {!showRecorder && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
+              <NoteEditor
+                value={content}
+                onChange={setContent}
+                type={type}
+                placeholder={type === 'CODE' ? 'Paste your code here...' : 'Write in Markdown...'}
+              />
+            </div>
+          )}
 
           {/* Notebook */}
           <div>
