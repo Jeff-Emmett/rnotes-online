@@ -3,6 +3,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { authFetch } from '@/lib/authFetch';
 
+interface WhisperProgress {
+  status: 'checking' | 'downloading' | 'loading' | 'transcribing' | 'done' | 'error';
+  progress?: number;
+  file?: string;
+  message?: string;
+}
+
 interface Segment {
   id: number;
   text: string;
@@ -36,6 +43,7 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
   const [error, setError] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
+  const [offlineProgress, setOfflineProgress] = useState<WhisperProgress | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -308,7 +316,7 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
       }
 
       if (!transcript) {
-        // Fallback: batch transcription via API proxy
+        // Fallback 1: batch transcription via API proxy
         try {
           const transcribeForm = new FormData();
           transcribeForm.append('audio', blob, 'recording.webm');
@@ -323,7 +331,20 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
             transcript = transcribeResult.text || '';
           }
         } catch {
-          console.warn('Batch transcription also failed');
+          console.warn('Batch transcription failed, trying offline...');
+        }
+      }
+
+      if (!transcript) {
+        // Fallback 2: offline Whisper via Transformers.js in browser
+        try {
+          setOfflineProgress({ status: 'loading', message: 'Loading offline model...' });
+          const { transcribeOffline } = await import('@/lib/whisperOffline');
+          transcript = await transcribeOffline(blob, (p) => setOfflineProgress(p));
+          setOfflineProgress(null);
+        } catch (offlineErr) {
+          console.warn('Offline transcription failed:', offlineErr);
+          setOfflineProgress(null);
         }
       }
 
@@ -391,9 +412,13 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
                 <span className="text-2xl font-mono text-white">
                   {formatTime(elapsed)}
                 </span>
-                {streaming && (
+                {streaming ? (
                   <span className="text-xs text-green-400/70 font-medium tracking-wider">
                     LIVE
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-500 font-medium tracking-wider">
+                    OFFLINE
                   </span>
                 )}
               </div>
@@ -430,8 +455,17 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
                 />
               </svg>
               <p className="text-sm text-slate-400">
-                Finalizing transcription...
+                {offlineProgress?.message || 'Finalizing transcription...'}
               </p>
+              {offlineProgress?.status === 'downloading' &&
+                offlineProgress.progress !== undefined && (
+                  <div className="w-48 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                      style={{ width: `${offlineProgress.progress}%` }}
+                    />
+                  </div>
+                )}
             </div>
           )}
 
