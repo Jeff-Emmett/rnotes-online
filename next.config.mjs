@@ -2,8 +2,8 @@
 const nextConfig = {
   output: 'standalone',
   webpack: (config, { isServer, webpack }) => {
-    // @xenova/transformers depends on onnxruntime-node (native .node binaries)
-    // which can't be bundled by webpack. We only use the web ONNX runtime.
+    // Ignore onnxruntime-node if any dependency pulls it in.
+    // We only use the browser ONNX runtime (loaded from CDN at runtime).
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /onnxruntime-node/,

@@ -338,8 +338,8 @@ export function VoiceRecorder({ onResult, className }: VoiceRecorderProps) {
       if (!transcript) {
         // Fallback 2: offline Whisper via Transformers.js in browser
         try {
-          setOfflineProgress({ status: 'loading', message: 'Loading offline model...' });
-          const { transcribeOffline } = await import('@/lib/whisperOffline');
+          setOfflineProgress({ status: 'loading', message: 'Loading Parakeet model...' });
+          const { transcribeOffline } = await import('@/lib/parakeetOffline');
           transcript = await transcribeOffline(blob, (p) => setOfflineProgress(p));
           setOfflineProgress(null);
         } catch (offlineErr) {
