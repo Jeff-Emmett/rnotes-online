@@ -876,6 +876,7 @@ export default function DemoContent() {
             <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">rCart</a>
             <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">rWallet</a>
             <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">rFiles</a>
+            <a href="https://rinbox.online" className="hover:text-slate-300 transition-colors">rInbox</a>
             <a href="https://rnetwork.online" className="hover:text-slate-300 transition-colors">rNetwork</a>
           </div>
           <p className="text-center text-xs text-slate-600">
