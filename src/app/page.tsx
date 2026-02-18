@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
 import { SearchBar } from '@/components/SearchBar';
 import { UserMenu } from '@/components/UserMenu';
+import { TranscriptionDemo } from '@/components/TranscriptionDemo';
 
 interface NotebookData {
   id: string;
@@ -43,16 +44,16 @@ export default function HomePage() {
               <SearchBar />
             </div>
             <Link
-              href="/notebooks"
+              href="/demo"
               className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
             >
-              Notebooks
+              Demo
             </Link>
             <Link
-              href="/notes/new"
+              href="/notebooks/new"
               className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
             >
-              <span className="hidden sm:inline">New Note</span>
+              <span className="hidden sm:inline">Create Notebook</span>
               <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </Link>
             <UserMenu />
@@ -76,8 +77,8 @@ export default function HomePage() {
             <span className="text-white">Find Anything</span>
           </h1>
           <p className="text-base md:text-lg text-slate-400 mb-6 md:mb-8 max-w-2xl mx-auto">
-            Notes, clips, bookmarks, code, images, and files — all in one place.
-            Organize in notebooks, tag freely, and collaborate on a visual canvas shared across r*Spaces.
+            Notes, clips, voice recordings, and live transcription — all in one place.
+            Speak and watch your words appear in real time, or drop in audio and video files to transcribe offline.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
@@ -96,37 +97,57 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Try it — live transcription */}
+      <section className="py-12 md:py-16 px-4 md:px-6 border-t border-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-3">Try Live Transcription</h2>
+          <p className="text-sm text-slate-400 text-center mb-8 max-w-lg mx-auto">
+            Hit the mic and start talking. Your speech is transcribed live in the browser — no account needed.
+          </p>
+          <TranscriptionDemo />
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="py-12 md:py-16 px-4 md:px-6 border-t border-slate-800">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-8 md:mb-12">How It Works</h2>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             <div className="text-center">
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Capture</h3>
-              <p className="text-sm text-slate-400">Notes, web clips, bookmarks, code snippets, images, and files. Every type of content, one tool.</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Live Transcribe</h3>
+              <p className="text-sm text-slate-400">Speak and watch your words appear in real time. WebSocket streaming with live timestamps.</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2m0 2a2 2 0 00-2 2v1a2 2 0 002 2h0a2 2 0 002-2V6a2 2 0 00-2-2zm0 8v2m0-2a2 2 0 01-2-2V9a2 2 0 012-2h0a2 2 0 012 2v1a2 2 0 01-2 2zm8-8V2m0 2a2 2 0 00-2 2v1a2 2 0 002 2h0a2 2 0 002-2V6a2 2 0 00-2-2zm0 8v2m0-2a2 2 0 01-2-2V9a2 2 0 012-2h0a2 2 0 012 2v1a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Organize</h3>
-              <p className="text-sm text-slate-400">Notebooks for structure, tags for cross-cutting themes. Full-text search finds anything instantly.</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Audio & Video</h3>
+              <p className="text-sm text-slate-400">Drop in audio or video files and get a full transcript. Powered by NVIDIA Parakeet — runs entirely in your browser.</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Collaborate</h3>
-              <p className="text-sm text-slate-400">Pin notes to a visual canvas. Share notebooks across r*Spaces for real-time collaboration.</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Notebooks & Tags</h3>
+              <p className="text-sm text-slate-400">Organize transcripts into notebooks alongside notes, clips, code, and files. Tag freely, search everything.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Private & Offline</h3>
+              <p className="text-sm text-slate-400">Parakeet.js runs entirely in the browser. Your audio never leaves your device — full offline support.</p>
             </div>
           </div>
         </div>
@@ -164,17 +185,22 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-500 mb-4">
             <span className="font-medium text-slate-400">r* Ecosystem</span>
-            <a href="https://rspace.online" className="hover:text-slate-300 transition-colors">🌌 rSpace</a>
-            <a href="https://rmaps.online" className="hover:text-slate-300 transition-colors">🗺️ rMaps</a>
-            <a href="https://rnotes.online" className="hover:text-slate-300 transition-colors font-medium text-slate-300">📝 rNotes</a>
-            <a href="https://rvote.online" className="hover:text-slate-300 transition-colors">🗳️ rVote</a>
-            <a href="https://rfunds.online" className="hover:text-slate-300 transition-colors">💰 rFunds</a>
-            <a href="https://rtrips.online" className="hover:text-slate-300 transition-colors">✈️ rTrips</a>
-            <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">🛒 rCart</a>
-            <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">💼 rWallet</a>
-            <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">📁 rFiles</a>
-            <a href="https://rinbox.online" className="hover:text-slate-300 transition-colors">✉️ rInbox</a>
-            <a href="https://rnetwork.online" className="hover:text-slate-300 transition-colors">🌐 rNetwork</a>
+            <a href="https://rspace.online" className="hover:text-slate-300 transition-colors">rSpace</a>
+            <a href="https://rmaps.online" className="hover:text-slate-300 transition-colors">rMaps</a>
+            <a href="https://rnotes.online" className="hover:text-slate-300 transition-colors font-medium text-slate-300">rNotes</a>
+            <a href="https://rvote.online" className="hover:text-slate-300 transition-colors">rVote</a>
+            <a href="https://rfunds.online" className="hover:text-slate-300 transition-colors">rFunds</a>
+            <a href="https://rtrips.online" className="hover:text-slate-300 transition-colors">rTrips</a>
+            <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">rCart</a>
+            <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">rWallet</a>
+            <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">rFiles</a>
+            <a href="https://rtube.online" className="hover:text-slate-300 transition-colors">rTube</a>
+            <a href="https://rcal.online" className="hover:text-slate-300 transition-colors">rCal</a>
+            <a href="https://rnetwork.online" className="hover:text-slate-300 transition-colors">rNetwork</a>
+            <a href="https://rinbox.online" className="hover:text-slate-300 transition-colors">rInbox</a>
+            <a href="https://rstack.online" className="hover:text-slate-300 transition-colors">rStack</a>
+            <a href="https://rauctions.online" className="hover:text-slate-300 transition-colors">rAuctions</a>
+            <a href="https://rpubs.online" className="hover:text-slate-300 transition-colors">rPubs</a>
           </div>
           <p className="text-center text-xs text-slate-600">
             Part of the r* ecosystem — collaborative tools for communities.
