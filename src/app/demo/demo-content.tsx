@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useMemo, useCallback } from 'react'
 import { useDemoSync, type DemoShape } from '@/lib/demo-sync'
+import { TranscriptionDemo } from '@/components/TranscriptionDemo'
 
 /* --- Types -------------------------------------------------------------- */
 
@@ -652,8 +653,9 @@ export default function DemoContent() {
             {notebook?.description || 'A collaborative knowledge base for your team'}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-400 mb-6">
+            <span>Live transcription</span>
+            <span>Audio & video</span>
             <span>Organized notebooks</span>
-            <span>Flexible tagging</span>
             <span>Canvas sync</span>
             <span>Real-time collaboration</span>
           </div>
@@ -786,11 +788,27 @@ export default function DemoContent() {
         </div>
       </section>
 
+      {/* Live transcription demo */}
+      <section className="max-w-7xl mx-auto px-6 pb-16">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-white mb-3">Live Voice Transcription</h2>
+          <p className="text-sm text-slate-400 max-w-lg mx-auto">
+            Speak and see your words appear in real time. rNotes transcribes audio and video — live or from files — with offline privacy via NVIDIA Parakeet.
+          </p>
+        </div>
+        <TranscriptionDemo />
+      </section>
+
       {/* Features showcase */}
       <section className="max-w-7xl mx-auto px-6 pb-16">
         <h2 className="text-2xl font-bold text-white text-center mb-8">Everything you need to capture knowledge</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
+            {
+              icon: 'voice',
+              title: 'Live Transcription',
+              desc: 'Record and transcribe in real time. Stream audio via WebSocket or transcribe offline with Parakeet.js.',
+            },
             {
               icon: 'rich-edit',
               title: 'Rich Editing',
@@ -817,6 +835,11 @@ export default function DemoContent() {
               className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5"
             >
               <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mb-3">
+                {feature.icon === 'voice' && (
+                  <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                )}
                 {feature.icon === 'rich-edit' && (
                   <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
