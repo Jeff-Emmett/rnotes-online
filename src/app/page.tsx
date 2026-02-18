@@ -192,6 +192,7 @@ export default function HomePage() {
             <a href="https://rfunds.online" className="hover:text-slate-300 transition-colors">rFunds</a>
             <a href="https://rtrips.online" className="hover:text-slate-300 transition-colors">rTrips</a>
             <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">rCart</a>
+            <a href="https://rchoices.online" className="hover:text-slate-300 transition-colors">rChoices</a>
             <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">rWallet</a>
             <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">rFiles</a>
             <a href="https://rtube.online" className="hover:text-slate-300 transition-colors">rTube</a>
@@ -201,6 +202,7 @@ export default function HomePage() {
             <a href="https://rstack.online" className="hover:text-slate-300 transition-colors">rStack</a>
             <a href="https://rauctions.online" className="hover:text-slate-300 transition-colors">rAuctions</a>
             <a href="https://rpubs.online" className="hover:text-slate-300 transition-colors">rPubs</a>
+            <a href="https://rdata.online" className="hover:text-slate-300 transition-colors">rData</a>
           </div>
           <p className="text-center text-xs text-slate-600">
             Part of the r* ecosystem — collaborative tools for communities.

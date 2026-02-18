@@ -39,6 +39,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script defer src="https://rdata.online/collect.js" data-website-id="5ca0ec67-ed51-4907-b064-413e20b1d947" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
