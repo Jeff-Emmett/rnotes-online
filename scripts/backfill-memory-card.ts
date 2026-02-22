@@ -54,7 +54,7 @@ async function backfillNotes() {
         await prisma.note.update({
           where: { id: note.id },
           data: {
-            bodyJson,
+            bodyJson: bodyJson as unknown as Prisma.InputJsonValue,
             bodyMarkdown,
             bodyFormat: 'html',
             cardType,
