@@ -15,7 +15,7 @@ interface ExportNote {
   contentPlain: string | null;
   properties: Record<string, unknown>;
   tags: { tag: { name: string } }[];
-  children?: ExportNote[];
+  children?: { title: string }[];
   attachments?: { file: { storageKey: string; filename: string } ; caption: string | null }[];
 }
 
