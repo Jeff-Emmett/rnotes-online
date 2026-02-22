@@ -153,6 +153,123 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Memory Cards */}
+      <section className="py-12 md:py-16 px-4 md:px-6 border-t border-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-3">
+            Memory Cards
+          </h2>
+          <p className="text-sm text-slate-400 text-center mb-8 md:mb-12 max-w-2xl mx-auto">
+            Every note is a Memory Card — a typed, structured unit of knowledge with hierarchy,
+            properties, and attachments. Designed for round-trip interoperability with Logseq.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {/* Card Types */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">7 Card Types</h3>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-amber-500/20 text-amber-400 border-amber-500/30">note</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-blue-500/20 text-blue-400 border-blue-500/30">link</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-green-500/20 text-green-400 border-green-500/30">task</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">idea</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-purple-500/20 text-purple-400 border-purple-500/30">person</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-pink-500/20 text-pink-400 border-pink-500/30">reference</span>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-slate-500/20 text-slate-400 border-slate-500/30">file</span>
+              </div>
+              <p className="text-xs text-slate-500">Each card type has distinct styling and behavior. Typed notes surface in filtered views and canvas visualizations.</p>
+            </div>
+
+            {/* Hierarchy & Properties */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">Hierarchy & Properties</h3>
+              </div>
+              <p className="text-sm text-slate-400 mb-3">
+                Nest cards under parents to build knowledge trees. Add structured <span className="font-mono text-amber-400/80">key:: value</span> properties — compatible with Logseq&apos;s property syntax.
+              </p>
+              <div className="space-y-1 text-xs font-mono text-slate-500">
+                <div><span className="text-slate-400">type::</span> idea</div>
+                <div><span className="text-slate-400">status::</span> doing</div>
+                <div><span className="text-slate-400">tags::</span> #research, #web3</div>
+              </div>
+            </div>
+
+            {/* Logseq Interop */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">Logseq Import & Export</h3>
+              </div>
+              <p className="text-sm text-slate-400 mb-3">
+                Export your notebooks as Logseq-compatible ZIP archives. Import a Logseq graph and keep your pages, properties, tags, and hierarchy intact.
+              </p>
+              <p className="text-xs text-slate-500">Round-trip fidelity: card types, tags, attachments, and parent-child structure all survive the journey.</p>
+            </div>
+
+            {/* Dual Format */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">Dual Format Storage</h3>
+              </div>
+              <p className="text-sm text-slate-400">
+                Every card stores rich TipTap JSON for editing and portable Markdown for search, export, and interoperability. Write once, read anywhere.
+              </p>
+            </div>
+
+            {/* Attachments */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">Structured Attachments</h3>
+              </div>
+              <p className="text-sm text-slate-400">
+                Attach images, PDFs, audio, and files to any card with roles (primary, preview, supporting) and captions. Thumbnails render inline.
+              </p>
+            </div>
+
+            {/* FUN Model */}
+            <div className="p-5 rounded-xl border border-slate-700/50 bg-slate-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-white">FUN, Not CRUD</h3>
+              </div>
+              <p className="text-sm text-slate-400">
+                <span className="text-amber-400 font-medium">F</span>orget, <span className="text-amber-400 font-medium">U</span>pdate, <span className="text-amber-400 font-medium">N</span>ew — nothing is permanently destroyed. Forgotten cards are archived and can be remembered at any time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Recent notebooks */}
       {!loading && notebooks.length > 0 && (
         <section className="py-12 md:py-16 px-4 md:px-6 border-t border-slate-800">
@@ -206,6 +323,9 @@ export default function HomePage() {
           </div>
           <p className="text-center text-xs text-slate-600">
             Part of the r* ecosystem — collaborative tools for communities.
+          </p>
+          <p className="text-center text-[10px] text-slate-700 mt-2">
+            Built on the Memory Card open spec.
           </p>
         </div>
       </footer>
