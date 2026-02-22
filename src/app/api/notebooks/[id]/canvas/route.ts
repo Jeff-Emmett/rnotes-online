@@ -3,12 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { pushShapesToCanvas } from '@/lib/canvas-sync';
 import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
 
-/**
- * POST /api/notebooks/[id]/canvas
- *
- * Creates an rSpace community for the notebook and populates it
- * with initial shapes from the notebook's notes.
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -26,7 +20,12 @@ export async function POST(
       where: { id: params.id },
       include: {
         notes: {
-          include: { tags: { include: { tag: true } } },
+          where: { archivedAt: null },
+          include: {
+            tags: { include: { tag: true } },
+            children: { select: { id: true }, where: { archivedAt: null } },
+            attachments: { select: { id: true } },
+          },
           orderBy: [{ isPinned: 'desc' }, { sortOrder: 'asc' }, { updatedAt: 'desc' }],
         },
       },
@@ -76,12 +75,20 @@ export async function POST(
         url: note.url || '',
         tags: note.tags.map((nt) => nt.tag.name),
         noteId: note.id,
+        // Memory Card enrichments
+        cardType: note.cardType,
+        summary: note.summary || '',
+        visibility: note.visibility,
+        properties: note.properties || {},
+        parentId: note.parentId || '',
+        hasChildren: note.children.length > 0,
+        childCount: note.children.length,
+        attachmentCount: note.attachments.length,
       });
     });
 
     await pushShapesToCanvas(canvasSlug, shapes);
 
-    // Store canvasSlug if not set
     if (!notebook.canvasSlug) {
       await prisma.notebook.update({
         where: { id: notebook.id },

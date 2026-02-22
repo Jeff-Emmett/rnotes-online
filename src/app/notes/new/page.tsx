@@ -46,6 +46,7 @@ function NewNoteForm() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [bodyJson, setBodyJson] = useState<object | null>(null);
   const [type, setType] = useState('NOTE');
   const [url, setUrl] = useState('');
   const [language, setLanguage] = useState('');
@@ -65,6 +66,11 @@ function NewNoteForm() {
       .catch(console.error);
   }, []);
 
+  const handleContentChange = (html: string, json?: object) => {
+    setContent(html);
+    if (json) setBodyJson(json);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || saving) return;
@@ -77,6 +83,7 @@ function NewNoteForm() {
         type,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       };
+      if (bodyJson) body.bodyJson = bodyJson;
       if (notebookId) body.notebookId = notebookId;
       if (url) body.url = url;
       if (language) body.language = language;
@@ -270,7 +277,7 @@ function NewNoteForm() {
               <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
               <NoteEditor
                 value={content}
-                onChange={setContent}
+                onChange={handleContentChange}
                 type={type}
                 placeholder={type === 'CODE' ? 'Paste your code here...' : 'Write in Markdown...'}
               />

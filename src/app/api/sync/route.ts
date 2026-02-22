@@ -4,8 +4,8 @@ import { prisma } from '@/lib/prisma';
 /**
  * POST /api/sync
  *
- * Receives shape update events from the rSpace canvas (via postMessage → CanvasEmbed → fetch)
- * and updates the corresponding DB records.
+ * Receives shape update events from the rSpace canvas and updates DB records.
+ * Handles Memory Card fields: cardType, summary, properties, visibility.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
     const shapeType = data?.type as string | undefined;
 
     if (type === 'shape-deleted') {
-      // Clear canvasShapeId references (don't delete the DB record)
       await Promise.all([
         prisma.note.updateMany({
           where: { canvasShapeId: shapeId },
@@ -41,12 +40,19 @@ export async function POST(request: NextRequest) {
       });
 
       if (note) {
-        await prisma.note.update({
-          where: { id: note.id },
-          data: {
-            title: (data.noteTitle as string) || note.title,
-          },
-        });
+        const updateData: Record<string, unknown> = {};
+        if (data.noteTitle) updateData.title = data.noteTitle;
+        if (data.cardType) updateData.cardType = data.cardType;
+        if (data.summary !== undefined) updateData.summary = data.summary || null;
+        if (data.visibility) updateData.visibility = data.visibility;
+        if (data.properties && typeof data.properties === 'object') updateData.properties = data.properties;
+
+        if (Object.keys(updateData).length > 0) {
+          await prisma.note.update({
+            where: { id: note.id },
+            data: updateData,
+          });
+        }
         return NextResponse.json({ ok: true, action: 'updated', entity: 'note', id: note.id });
       }
     }

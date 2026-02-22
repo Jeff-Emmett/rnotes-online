@@ -18,6 +18,7 @@ model User {
 
   notebooks NotebookCollaborator[]
   notes     Note[]
+  files     File[]
   sharedByMe SharedAccess[] @relation("SharedBy")
 }
 
@@ -86,12 +87,31 @@ model Note {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  tags NoteTag[]
+  // ─── Memory Card fields ─────────────────────────────────────────
+  parentId      String?
+  parent        Note?    @relation("NoteTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children      Note[]   @relation("NoteTree")
+  bodyJson      Json?                          // TipTap JSON (canonical format)
+  bodyMarkdown  String?  @db.Text              // portable markdown for search + Logseq
+  bodyFormat    String   @default("html")      // "html" | "markdown" | "blocks"
+  cardType      String   @default("note")      // note|link|file|task|person|idea|reference
+  summary       String?                        // auto or manual
+  visibility    String   @default("private")   // private|space|public
+  position      Float?                         // fractional ordering
+  properties    Json     @default("{}")         // Logseq-compatible key-value
+  archivedAt    DateTime?                      // soft-delete
+
+  tags        NoteTag[]
+  attachments CardAttachment[]
 
   @@index([notebookId])
   @@index([authorId])
   @@index([type])
   @@index([isPinned])
+  @@index([parentId])
+  @@index([cardType])
+  @@index([archivedAt])
+  @@index([position])
 }
 
 enum NoteType {
@@ -104,15 +124,52 @@ enum NoteType {
   AUDIO
 }
 
+// ─── Files & Attachments ────────────────────────────────────────────
+
+model File {
+  id         String   @id @default(cuid())
+  storageKey String   @unique // unique filename on disk
+  filename   String              // original filename
+  mimeType   String
+  sizeBytes  Int
+  checksum   String?
+  authorId   String?
+  author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  attachments CardAttachment[]
+}
+
+model CardAttachment {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  fileId    String
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  role      String   @default("supporting") // "primary"|"preview"|"supporting"
+  caption   String?
+  position  Float    @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([noteId, fileId])
+  @@index([noteId])
+  @@index([fileId])
+}
+
 // ─── Tags ───────────────────────────────────────────────────────────
 
 model Tag {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String
   color     String?  @default("#6b7280")
+  spaceId   String   @default("")  // "" = global, otherwise space-scoped
+  schema    Json?
   createdAt DateTime @default(now())
 
   notes NoteTag[]
+
+  @@unique([spaceId, name])
+  @@index([spaceId])
 }
 
 model NoteTag {

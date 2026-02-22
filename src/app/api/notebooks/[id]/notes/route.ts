@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripHtml } from '@/lib/strip-html';
 import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
+import { htmlToTipTapJson, tipTapJsonToMarkdown, mapNoteTypeToCardType } from '@/lib/content-convert';
 
 export async function GET(
   _request: NextRequest,
@@ -9,9 +10,12 @@ export async function GET(
 ) {
   try {
     const notes = await prisma.note.findMany({
-      where: { notebookId: params.id },
+      where: { notebookId: params.id, archivedAt: null },
       include: {
         tags: { include: { tag: true } },
+        parent: { select: { id: true, title: true } },
+        children: { select: { id: true, title: true, cardType: true }, where: { archivedAt: null } },
+        attachments: { include: { file: true }, orderBy: { position: 'asc' } },
       },
       orderBy: [{ isPinned: 'desc' }, { sortOrder: 'asc' }, { updatedAt: 'desc' }],
     });
@@ -37,13 +41,33 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { title, content, type, url, language, tags, fileUrl, mimeType, fileSize, duration } = body;
+    const {
+      title, content, type, url, language, tags, fileUrl, mimeType, fileSize, duration,
+      parentId, cardType: cardTypeOverride, visibility, properties, summary, position, bodyJson: clientBodyJson,
+    } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
     const contentPlain = content ? stripHtml(content) : null;
+
+    // Dual-write
+    let bodyJson = clientBodyJson || null;
+    let bodyMarkdown: string | null = null;
+    let bodyFormat = 'html';
+
+    if (clientBodyJson) {
+      bodyJson = clientBodyJson;
+      bodyMarkdown = tipTapJsonToMarkdown(clientBodyJson);
+      bodyFormat = 'blocks';
+    } else if (content) {
+      bodyJson = htmlToTipTapJson(content);
+      bodyMarkdown = tipTapJsonToMarkdown(bodyJson);
+    }
+
+    const noteType = type || 'NOTE';
+    const resolvedCardType = cardTypeOverride || mapNoteTypeToCardType(noteType);
 
     // Find or create tags
     const tagRecords = [];
@@ -52,9 +76,9 @@ export async function POST(
         const name = tagName.trim().toLowerCase();
         if (!name) continue;
         const tag = await prisma.tag.upsert({
-          where: { name },
+          where: { spaceId_name: { spaceId: '', name } },
           update: {},
-          create: { name },
+          create: { name, spaceId: '' },
         });
         tagRecords.push(tag);
       }
@@ -67,13 +91,22 @@ export async function POST(
         title: title.trim(),
         content: content || '',
         contentPlain,
-        type: type || 'NOTE',
+        type: noteType,
         url: url || null,
         language: language || null,
         fileUrl: fileUrl || null,
         mimeType: mimeType || null,
         fileSize: fileSize || null,
         duration: duration || null,
+        bodyJson: bodyJson || undefined,
+        bodyMarkdown,
+        bodyFormat,
+        cardType: resolvedCardType,
+        parentId: parentId || null,
+        visibility: visibility || 'private',
+        properties: properties || {},
+        summary: summary || null,
+        position: position ?? null,
         tags: {
           create: tagRecords.map((tag) => ({
             tagId: tag.id,
@@ -82,6 +115,9 @@ export async function POST(
       },
       include: {
         tags: { include: { tag: true } },
+        parent: { select: { id: true, title: true } },
+        children: { select: { id: true, title: true, cardType: true }, where: { archivedAt: null } },
+        attachments: { include: { file: true }, orderBy: { position: 'asc' } },
       },
     });
 

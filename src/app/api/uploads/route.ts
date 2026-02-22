@@ -4,6 +4,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { nanoid } from 'nanoid';
 import { requireAuth, isAuthed } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads';
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
     if (!isAuthed(auth)) return auth;
+    const { user } = auth;
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -73,12 +75,24 @@ export async function POST(request: NextRequest) {
 
     const fileUrl = `/api/uploads/${uniqueName}`;
 
+    // Create File record in database
+    const fileRecord = await prisma.file.create({
+      data: {
+        storageKey: uniqueName,
+        filename: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+        authorId: user.id,
+      },
+    });
+
     return NextResponse.json({
       url: fileUrl,
       filename: uniqueName,
       originalName: file.name,
       size: file.size,
       mimeType: file.type,
+      fileId: fileRecord.id,
     }, { status: 201 });
   } catch (error) {
     console.error('Upload error:', error);

@@ -11,7 +11,8 @@ import Image from '@tiptap/extension-image';
 
 interface NoteEditorProps {
   value: string;
-  onChange: (content: string) => void;
+  onChange: (content: string, json?: object) => void;
+  valueJson?: object;
   type?: string;
   placeholder?: string;
 }
@@ -43,7 +44,7 @@ function ToolbarButton({
   );
 }
 
-function RichEditor({ value, onChange, placeholder: placeholderText }: Omit<NoteEditorProps, 'type'>) {
+function RichEditor({ value, onChange, valueJson, placeholder: placeholderText }: Omit<NoteEditorProps, 'type'>) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -61,9 +62,9 @@ function RichEditor({ value, onChange, placeholder: placeholderText }: Omit<Note
       TaskItem.configure({ nested: true }),
       Image.configure({ inline: true }),
     ],
-    content: value || '',
+    content: valueJson || value || '',
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange(editor.getHTML(), editor.getJSON());
     },
     editorProps: {
       attributes: {
@@ -168,7 +169,7 @@ function RichEditor({ value, onChange, placeholder: placeholderText }: Omit<Note
           onClick={() => editor.chain().focus().toggleTaskList().run()}
           title="Task List"
         >
-          ☐ Tasks
+          &#9744; Tasks
         </ToolbarButton>
 
         <div className="w-px h-5 bg-slate-700 mx-1" />
@@ -210,19 +211,19 @@ function RichEditor({ value, onChange, placeholder: placeholderText }: Omit<Note
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           title="Horizontal Rule"
         >
-          ─
+          &#9472;
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
           title="Undo"
         >
-          ↩
+          &#8617;
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().redo().run()}
           title="Redo"
         >
-          ↪
+          &#8618;
         </ToolbarButton>
       </div>
 
@@ -232,7 +233,7 @@ function RichEditor({ value, onChange, placeholder: placeholderText }: Omit<Note
   );
 }
 
-export function NoteEditor({ value, onChange, type, placeholder }: NoteEditorProps) {
+export function NoteEditor({ value, onChange, valueJson, type, placeholder }: NoteEditorProps) {
   const isCode = type === 'CODE';
 
   if (isCode) {
@@ -248,5 +249,5 @@ export function NoteEditor({ value, onChange, type, placeholder }: NoteEditorPro
     );
   }
 
-  return <RichEditor value={value} onChange={onChange} placeholder={placeholder} />;
+  return <RichEditor value={value} onChange={onChange} valueJson={valueJson} placeholder={placeholder} />;
 }

@@ -18,12 +18,26 @@ const TYPE_COLORS: Record<string, string> = {
   AUDIO: 'bg-red-500/20 text-red-400',
 };
 
+const CARD_TYPE_COLORS: Record<string, string> = {
+  note: 'bg-amber-500/20 text-amber-400',
+  link: 'bg-blue-500/20 text-blue-400',
+  file: 'bg-slate-500/20 text-slate-400',
+  task: 'bg-green-500/20 text-green-400',
+  person: 'bg-purple-500/20 text-purple-400',
+  idea: 'bg-yellow-500/20 text-yellow-400',
+  reference: 'bg-pink-500/20 text-pink-400',
+};
+
 interface NoteData {
   id: string;
   title: string;
   content: string;
   contentPlain: string | null;
+  bodyJson: object | null;
+  bodyMarkdown: string | null;
+  bodyFormat: string;
   type: string;
+  cardType: string;
   url: string | null;
   language: string | null;
   fileUrl: string | null;
@@ -32,10 +46,16 @@ interface NoteData {
   duration: number | null;
   isPinned: boolean;
   canvasShapeId: string | null;
+  summary: string | null;
+  visibility: string;
+  properties: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   notebook: { id: string; title: string; slug: string } | null;
+  parent: { id: string; title: string; cardType: string } | null;
+  children: { id: string; title: string; cardType: string }[];
   tags: { tag: { id: string; name: string; color: string | null } }[];
+  attachments: { id: string; role: string; caption: string | null; file: { id: string; filename: string; mimeType: string; sizeBytes: number; storageKey: string } }[];
 }
 
 export default function NoteDetailPage() {
@@ -46,6 +66,7 @@ export default function NoteDetailPage() {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [editBodyJson, setEditBodyJson] = useState<object | null>(null);
   const [saving, setSaving] = useState(false);
   const [diarizing, setDiarizing] = useState(false);
   const [speakers, setSpeakers] = useState<{ speaker: string; start: number; end: number }[] | null>(null);
@@ -57,19 +78,32 @@ export default function NoteDetailPage() {
         setNote(data);
         setEditTitle(data.title);
         setEditContent(data.content);
+        setEditBodyJson(data.bodyJson || null);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [params.id]);
 
+  const handleEditorChange = (html: string, json?: object) => {
+    setEditContent(html);
+    if (json) setEditBodyJson(json);
+  };
+
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
     try {
+      const payload: Record<string, unknown> = { title: editTitle };
+      if (editBodyJson) {
+        payload.bodyJson = editBodyJson;
+      } else {
+        payload.content = editContent;
+      }
+
       const res = await authFetch(`/api/notes/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: editTitle, content: editContent }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -97,7 +131,7 @@ export default function NoteDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this note?')) return;
+    if (!confirm('Archive this note? It can be restored later.')) return;
     await authFetch(`/api/notes/${params.id}`, { method: 'DELETE' });
     if (note?.notebook) {
       router.push(`/notebooks/${note.notebook.id}`);
@@ -110,7 +144,6 @@ export default function NoteDetailPage() {
     if (!note?.fileUrl || diarizing) return;
     setDiarizing(true);
     try {
-      // Fetch the audio file from the server
       const audioRes = await fetch(note.fileUrl);
       const audioBlob = await audioRes.blob();
 
@@ -154,6 +187,8 @@ export default function NoteDetailPage() {
     );
   }
 
+  const properties = note.properties && typeof note.properties === 'object' ? Object.entries(note.properties).filter(([, v]) => v != null && v !== '') : [];
+
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
@@ -165,6 +200,14 @@ export default function NoteDetailPage() {
               </div>
             </Link>
             <span className="text-slate-600 hidden sm:inline">/</span>
+            {note.parent && (
+              <>
+                <Link href={`/notes/${note.parent.id}`} className="text-slate-400 hover:text-white transition-colors hidden sm:inline truncate max-w-[120px]">
+                  {note.parent.title}
+                </Link>
+                <span className="text-slate-600 hidden sm:inline">/</span>
+              </>
+            )}
             {note.notebook ? (
               <>
                 <Link href={`/notebooks/${note.notebook.id}`} className="text-slate-400 hover:text-white transition-colors hidden sm:inline truncate max-w-[120px]">
@@ -201,6 +244,7 @@ export default function NoteDetailPage() {
                     setEditing(false);
                     setEditTitle(note.title);
                     setEditContent(note.content);
+                    setEditBodyJson(note.bodyJson || null);
                   }}
                   className="px-2 md:px-3 py-1.5 text-sm text-slate-400 border border-slate-700 rounded-lg hover:text-white transition-colors hidden sm:inline-flex"
                 >
@@ -219,7 +263,7 @@ export default function NoteDetailPage() {
               onClick={handleDelete}
               className="px-2 md:px-3 py-1.5 text-sm text-red-400 hover:text-red-300 border border-red-900/30 rounded-lg transition-colors"
             >
-              <span className="hidden sm:inline">Delete</span>
+              <span className="hidden sm:inline">Forget</span>
               <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
             <UserMenu />
@@ -233,6 +277,16 @@ export default function NoteDetailPage() {
           <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${TYPE_COLORS[note.type] || TYPE_COLORS.NOTE}`}>
             {note.type}
           </span>
+          {note.cardType !== 'note' && (
+            <span className={`text-xs font-medium px-2 py-1 rounded ${CARD_TYPE_COLORS[note.cardType] || CARD_TYPE_COLORS.note}`}>
+              {note.cardType}
+            </span>
+          )}
+          {note.visibility !== 'private' && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400">
+              {note.visibility}
+            </span>
+          )}
           {note.tags.map((nt) => (
             <TagBadge key={nt.tag.id} name={nt.tag.name} color={nt.tag.color} />
           ))}
@@ -240,6 +294,24 @@ export default function NoteDetailPage() {
             Created {new Date(note.createdAt).toLocaleDateString()} &middot; Updated {new Date(note.updatedAt).toLocaleDateString()}
           </span>
         </div>
+
+        {/* Summary */}
+        {note.summary && (
+          <div className="mb-4 p-3 bg-slate-800/30 border border-slate-700/50 rounded-lg text-sm text-slate-300 italic">
+            {note.summary}
+          </div>
+        )}
+
+        {/* Properties */}
+        {properties.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {properties.map(([key, value]) => (
+              <span key={key} className="text-[10px] px-2 py-1 rounded bg-slate-800/50 border border-slate-700/50 text-slate-400">
+                <span className="text-slate-500">{key}:</span> {String(value)}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* URL */}
         {note.url && (
@@ -325,6 +397,34 @@ export default function NoteDetailPage() {
           </div>
         )}
 
+        {/* Attachments gallery */}
+        {note.attachments.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Attachments</h3>
+            <div className="flex flex-wrap gap-2">
+              {note.attachments.map((att) => (
+                <a
+                  key={att.id}
+                  href={`/api/uploads/${att.file.storageKey}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-300 hover:border-slate-600 transition-colors"
+                >
+                  {att.file.mimeType.startsWith('image/') ? (
+                    <img src={`/api/uploads/${att.file.storageKey}`} alt={att.caption || att.file.filename} className="w-8 h-8 object-cover rounded" />
+                  ) : (
+                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                  <span className="truncate max-w-[150px]">{att.caption || att.file.filename}</span>
+                  <span className="text-[10px] text-slate-500">{att.role}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         {editing ? (
           <div className="space-y-4">
@@ -336,7 +436,8 @@ export default function NoteDetailPage() {
             />
             <NoteEditor
               value={editContent}
-              onChange={setEditContent}
+              valueJson={editBodyJson || undefined}
+              onChange={handleEditorChange}
               type={note.type}
             />
           </div>
@@ -355,6 +456,27 @@ export default function NoteDetailPage() {
                 dangerouslySetInnerHTML={{ __html: note.content }}
               />
             )}
+          </div>
+        )}
+
+        {/* Children */}
+        {note.children.length > 0 && (
+          <div className="mt-8 border-t border-slate-800 pt-6">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">Child Notes</h3>
+            <div className="space-y-2">
+              {note.children.map((child) => (
+                <Link
+                  key={child.id}
+                  href={`/notes/${child.id}`}
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/30 rounded-lg transition-colors"
+                >
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${CARD_TYPE_COLORS[child.cardType] || CARD_TYPE_COLORS.note}`}>
+                    {child.cardType}
+                  </span>
+                  <span className="text-sm text-slate-300 hover:text-white">{child.title}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </main>
