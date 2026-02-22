@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Phase 1: Extract assets
     const assetFiles = new Map<string, string>(); // original path → storageKey
-    for (const [name, data] of entries) {
+    for (const [name, data] of Array.from(entries.entries())) {
       if (name.startsWith('assets/') && data.length > 0) {
         const assetName = name.replace('assets/', '');
         const ext = path.extname(assetName);
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Phase 2: Parse pages
     const importedNotes: { filename: string; parsed: ReturnType<typeof logseqPageToNote>; noteId?: string }[] = [];
 
-    for (const [name, data] of entries) {
+    for (const [name, data] of Array.from(entries.entries())) {
       if (name.startsWith('pages/') && name.endsWith('.md') && data.length > 0) {
         const filename = name.replace('pages/', '');
         const content = data.toString('utf8');

@@ -123,8 +123,9 @@ export function logseqPageToNote(filename: string, content: string): ImportedNot
         cardType = value.trim();
       } else if (key === 'tags') {
         // Parse #tag1, #tag2
-        const tagMatches = value.matchAll(/#([a-zA-Z0-9_-]+)/g);
-        for (const m of tagMatches) {
+        const tagRegex = /#([a-zA-Z0-9_-]+)/g;
+        let m;
+        while ((m = tagRegex.exec(value)) !== null) {
           tags.push(m[1].toLowerCase());
         }
       } else if (key === 'visibility') {
