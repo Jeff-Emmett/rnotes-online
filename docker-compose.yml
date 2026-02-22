@@ -18,6 +18,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.rnotes.rule=Host(`rnotes.online`) || Host(`www.rnotes.online`)"
+      - "traefik.http.routers.rnotes.entrypoints=web"
+      - "traefik.http.routers.rnotes.priority=130"
       - "traefik.http.services.rnotes.loadbalancer.server.port=3000"
     networks:
       - traefik-public
