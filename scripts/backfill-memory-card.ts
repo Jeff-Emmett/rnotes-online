@@ -13,7 +13,7 @@
  * Run: docker exec rnotes-online npx tsx scripts/backfill-memory-card.ts
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { htmlToTipTapJson, tipTapJsonToMarkdown, mapNoteTypeToCardType } from '../src/lib/content-convert';
 
 const prisma = new PrismaClient();
@@ -24,7 +24,7 @@ async function backfillNotes() {
 
   // Count notes needing backfill
   const total = await prisma.note.count({
-    where: { bodyJson: null, content: { not: '' } },
+    where: { bodyJson: { equals: Prisma.DbNull }, content: { not: '' } },
   });
   console.log(`Found ${total} notes to backfill.\n`);
 
@@ -38,7 +38,7 @@ async function backfillNotes() {
 
   while (true) {
     const notes = await prisma.note.findMany({
-      where: { bodyJson: null, content: { not: '' } },
+      where: { bodyJson: { equals: Prisma.DbNull }, content: { not: '' } },
       select: { id: true, content: true, type: true, sortOrder: true, fileUrl: true, mimeType: true, fileSize: true, authorId: true },
       take: BATCH_SIZE,
     });
@@ -121,11 +121,11 @@ async function backfillNotes() {
 
   // Also backfill notes with empty content (set bodyJson to empty doc)
   const emptyNotes = await prisma.note.count({
-    where: { bodyJson: null, content: '' },
+    where: { bodyJson: { equals: Prisma.DbNull }, content: '' },
   });
   if (emptyNotes > 0) {
     await prisma.note.updateMany({
-      where: { bodyJson: null, content: '' },
+      where: { bodyJson: { equals: Prisma.DbNull }, content: '' },
       data: {
         bodyJson: { type: 'doc', content: [] },
         bodyMarkdown: '',
@@ -148,7 +148,7 @@ async function backfillNotes() {
 
   // Verify
   const remaining = await prisma.note.count({
-    where: { bodyJson: null, content: { not: '' } },
+    where: { bodyJson: { equals: Prisma.DbNull }, content: { not: '' } },
   });
   console.log(`Remaining unprocessed notes: ${remaining}`);
 }
