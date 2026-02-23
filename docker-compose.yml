@@ -21,6 +21,11 @@ services:
       - "traefik.http.routers.rnotes.entrypoints=web"
       - "traefik.http.routers.rnotes.priority=130"
       - "traefik.http.services.rnotes.loadbalancer.server.port=3000"
+      # Wildcard subdomain routing (e.g. cca.rnotes.online)
+      - "traefik.http.routers.rnotes-wildcard.rule=HostRegexp(`{sub:[a-z0-9-]+}.rnotes.online`)"
+      - "traefik.http.routers.rnotes-wildcard.entrypoints=web"
+      - "traefik.http.routers.rnotes-wildcard.priority=100"
+      - "traefik.http.routers.rnotes-wildcard.service=rnotes"
     networks:
       - traefik-public
       - rnotes-internal
