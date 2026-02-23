@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { NoteCard } from '@/components/NoteCard';
 import { CanvasEmbed } from '@/components/CanvasEmbed';
+import { OpenNotebookEmbed } from '@/components/OpenNotebookEmbed';
 import { UserMenu } from '@/components/UserMenu';
 import { authFetch } from '@/lib/authFetch';
 import type { CanvasShapeMessage } from '@/lib/canvas-sync';
@@ -38,7 +39,7 @@ export default function NotebookDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showCanvas, setShowCanvas] = useState(false);
   const [creatingCanvas, setCreatingCanvas] = useState(false);
-  const [tab, setTab] = useState<'notes' | 'pinned'>('notes');
+  const [tab, setTab] = useState<'notes' | 'pinned' | 'ai'>('notes');
 
   const fetchNotebook = useCallback(() => {
     fetch(`/api/notebooks/${params.id}`)
@@ -207,10 +208,22 @@ export default function NotebookDetailPage() {
             >
               Pinned
             </button>
+            <button
+              onClick={() => setTab('ai')}
+              className={`pb-3 text-sm font-medium transition-colors ${
+                tab === 'ai'
+                  ? 'text-amber-400 border-b-2 border-amber-400'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              AI Notebook
+            </button>
           </div>
 
-          {/* Notes grid */}
-          {filteredNotes.length === 0 ? (
+          {/* Tab content */}
+          {tab === 'ai' ? (
+            <OpenNotebookEmbed className="h-[calc(100vh-220px)] min-h-[500px]" />
+          ) : filteredNotes.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
               {tab === 'pinned' ? 'No pinned notes' : 'No notes yet. Add one!'}
             </div>

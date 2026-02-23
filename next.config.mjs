@@ -1,6 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-src 'self' https://opennotebook.rnotes.online https://notebook.jeffemmett.com;",
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config, { isServer, webpack }) => {
     // Ignore onnxruntime-node if any dependency pulls it in.
     // We only use the browser ONNX runtime (loaded from CDN at runtime).
