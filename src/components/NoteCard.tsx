@@ -22,9 +22,10 @@ interface NoteCardProps {
   updatedAt: string;
   tags: { id: string; name: string; color: string | null }[];
   url?: string | null;
+  archiveUrl?: string | null;
 }
 
-export function NoteCard({ id, title, type, contentPlain, isPinned, updatedAt, tags, url }: NoteCardProps) {
+export function NoteCard({ id, title, type, contentPlain, isPinned, updatedAt, tags, url, archiveUrl }: NoteCardProps) {
   const snippet = (contentPlain || '').slice(0, 120);
 
   return (
@@ -39,6 +40,11 @@ export function NoteCard({ id, title, type, contentPlain, isPinned, updatedAt, t
         {isPinned && (
           <span className="text-amber-400 text-xs" title="Pinned to canvas">
             &#9733;
+          </span>
+        )}
+        {archiveUrl && (
+          <span className="text-emerald-400 text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-emerald-500/10" title="Unlocked article">
+            unlocked
           </span>
         )}
         <span className="text-[10px] text-slate-500 ml-auto">

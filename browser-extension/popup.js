@@ -152,6 +152,7 @@ async function init() {
 
   // Enable buttons
   document.getElementById('clipPageBtn').disabled = false;
+  document.getElementById('unlockBtn').disabled = false;
 
   // Load notebooks
   await populateNotebooks();
@@ -248,6 +249,49 @@ document.getElementById('clipSelectionBtn').addEventListener('click', async () =
       title: 'Selection Clipped',
       message: `Saved to rNotes`,
     });
+  } catch (err) {
+    showStatus(`Error: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('unlockBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('unlockBtn');
+  btn.disabled = true;
+  showStatus('Unlocking article...', 'loading');
+
+  try {
+    const token = await getToken();
+    const settings = await getSettings();
+
+    const response = await fetch(`${settings.host}/api/articles/unlock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ url: currentTab.url }),
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.archiveUrl) {
+      // Also save as a note
+      await createNote({
+        title: currentTab.title || 'Unlocked Article',
+        content: `<p>Unlocked via ${result.strategy}</p><p>Original: <a href="${currentTab.url}">${currentTab.url}</a></p><p>Archive: <a href="${result.archiveUrl}">${result.archiveUrl}</a></p>`,
+        type: 'CLIP',
+        url: currentTab.url,
+      });
+
+      showStatus(`Unlocked via ${result.strategy}! Opening...`, 'success');
+
+      // Open archive in new tab
+      chrome.tabs.create({ url: result.archiveUrl });
+    } else {
+      showStatus(result.error || 'No archived version found', 'error');
+    }
   } catch (err) {
     showStatus(`Error: ${err.message}`, 'error');
   } finally {

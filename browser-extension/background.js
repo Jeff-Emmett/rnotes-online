@@ -26,6 +26,12 @@ chrome.runtime.onInstalled.addListener(() => {
     title: 'Clip selection to rNotes',
     contexts: ['selection'],
   });
+
+  chrome.contextMenus.create({
+    id: 'unlock-article',
+    title: 'Unlock & Clip article to rNotes',
+    contexts: ['page', 'link'],
+  });
 });
 
 // --- Helpers ---
@@ -132,6 +138,31 @@ async function uploadImage(imageUrl) {
   return response.json();
 }
 
+async function unlockArticle(url) {
+  const token = await getToken();
+  if (!token) {
+    showNotification('rNotes Error', 'Not signed in. Open extension settings to sign in.');
+    return null;
+  }
+
+  const settings = await getSettings();
+  const response = await fetch(`${settings.host}/api/articles/unlock`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Unlock failed: ${response.status} ${text}`);
+  }
+
+  return response.json();
+}
+
 // --- Context Menu Handler ---
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -194,6 +225,28 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         });
 
         showNotification('Image Saved', `Image saved to rNotes`);
+        break;
+      }
+
+      case 'unlock-article': {
+        const targetUrl = info.linkUrl || tab.url;
+        showNotification('Unlocking Article', `Finding readable version of ${new URL(targetUrl).hostname}...`);
+
+        const result = await unlockArticle(targetUrl);
+        if (result && result.success && result.archiveUrl) {
+          // Create a CLIP note with the archive URL
+          await createNote({
+            title: tab.title || 'Unlocked Article',
+            content: `<p>Unlocked via ${result.strategy}</p><p>Original: <a href="${targetUrl}">${targetUrl}</a></p><p>Archive: <a href="${result.archiveUrl}">${result.archiveUrl}</a></p>`,
+            type: 'CLIP',
+            url: targetUrl,
+          });
+          showNotification('Article Unlocked', `Readable version found via ${result.strategy}`);
+          // Open the unlocked article in a new tab
+          chrome.tabs.create({ url: result.archiveUrl });
+        } else {
+          showNotification('Unlock Failed', result?.error || 'No archived version found');
+        }
         break;
       }
 

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!isAuthed(auth)) return auth;
     const { user } = auth;
     const body = await request.json();
-    const { title, content, type, notebookId, url, language, tags, fileUrl, mimeType, fileSize, duration } = body;
+    const { title, content, type, notebookId, url, archiveUrl, language, tags, fileUrl, mimeType, fileSize, duration } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         notebookId: notebookId || null,
         authorId: user.id,
         url: url || null,
+        archiveUrl: archiveUrl || null,
         language: language || null,
         fileUrl: fileUrl || null,
         mimeType: mimeType || null,

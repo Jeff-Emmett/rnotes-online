@@ -50,7 +50,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, content, type, url, language, isPinned, notebookId, tags } = body;
+    const { title, content, type, url, archiveUrl, language, isPinned, notebookId, tags } = body;
 
     const data: Record<string, unknown> = {};
     if (title !== undefined) data.title = title.trim();
@@ -60,6 +60,7 @@ export async function PUT(
     }
     if (type !== undefined) data.type = type;
     if (url !== undefined) data.url = url || null;
+    if (archiveUrl !== undefined) data.archiveUrl = archiveUrl || null;
     if (language !== undefined) data.language = language || null;
     if (isPinned !== undefined) data.isPinned = isPinned;
     if (notebookId !== undefined) data.notebookId = notebookId || null;

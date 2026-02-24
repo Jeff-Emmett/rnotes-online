@@ -25,6 +25,7 @@ interface NoteData {
   contentPlain: string | null;
   type: string;
   url: string | null;
+  archiveUrl: string | null;
   language: string | null;
   fileUrl: string | null;
   mimeType: string | null;
@@ -49,6 +50,8 @@ export default function NoteDetailPage() {
   const [saving, setSaving] = useState(false);
   const [diarizing, setDiarizing] = useState(false);
   const [speakers, setSpeakers] = useState<{ speaker: string; start: number; end: number }[] | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/notes/${params.id}`)
@@ -132,6 +135,30 @@ export default function NoteDetailPage() {
       console.error('Diarization error:', error);
     } finally {
       setDiarizing(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (!note?.url || unlocking) return;
+    setUnlocking(true);
+    setUnlockError(null);
+    try {
+      const res = await authFetch('/api/articles/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: note.url, noteId: note.id }),
+      });
+      const result = await res.json();
+      if (result.success && result.archiveUrl) {
+        setNote({ ...note, archiveUrl: result.archiveUrl });
+      } else {
+        setUnlockError(result.error || 'No archived version found');
+      }
+    } catch (error) {
+      setUnlockError('Failed to unlock article');
+      console.error('Unlock error:', error);
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -241,16 +268,63 @@ export default function NoteDetailPage() {
           </span>
         </div>
 
-        {/* URL */}
+        {/* URL + Unlock */}
         {note.url && (
-          <a
-            href={note.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 mb-4 block truncate"
-          >
-            {note.url}
-          </a>
+          <div className="mb-4 space-y-2">
+            <a
+              href={note.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-400 hover:text-blue-300 block truncate"
+            >
+              {note.url}
+            </a>
+
+            {note.archiveUrl ? (
+              <div className="flex items-center gap-2">
+                <a
+                  href={note.archiveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                  </svg>
+                  View Unlocked Article
+                </a>
+                <span className="text-[10px] text-slate-500 truncate max-w-[200px]">{note.archiveUrl}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleUnlock}
+                  disabled={unlocking}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+                >
+                  {unlocking ? (
+                    <>
+                      <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Unlocking...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Unlock Article
+                    </>
+                  )}
+                </button>
+                {unlockError && (
+                  <span className="text-[10px] text-red-400">{unlockError}</span>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         {/* Uploaded file/image */}
