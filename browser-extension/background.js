@@ -291,6 +291,20 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
+// --- Keyboard shortcut handler ---
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'open-voice-recorder') {
+    chrome.windows.create({
+      url: chrome.runtime.getURL('voice.html'),
+      type: 'popup',
+      width: 380,
+      height: 520,
+      focused: true,
+    });
+  }
+});
+
 // --- Message Handler (from popup) ---
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

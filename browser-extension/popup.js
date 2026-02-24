@@ -153,6 +153,7 @@ async function init() {
   // Enable buttons
   document.getElementById('clipPageBtn').disabled = false;
   document.getElementById('unlockBtn').disabled = false;
+  document.getElementById('voiceBtn').disabled = false;
 
   // Load notebooks
   await populateNotebooks();
@@ -297,6 +298,19 @@ document.getElementById('unlockBtn').addEventListener('click', async () => {
   } finally {
     btn.disabled = false;
   }
+});
+
+document.getElementById('voiceBtn').addEventListener('click', () => {
+  // Open voice recorder in a small popup window
+  chrome.windows.create({
+    url: chrome.runtime.getURL('voice.html'),
+    type: 'popup',
+    width: 380,
+    height: 520,
+    focused: true,
+  });
+  // Close the current popup
+  window.close();
 });
 
 document.getElementById('optionsLink').addEventListener('click', (e) => {
