@@ -6,13 +6,12 @@ services:
     container_name: rnotes-online
     restart: unless-stopped
     environment:
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_SLUG=rnotes
+      - INFISICAL_ENV=prod
+      - INFISICAL_URL=http://infisical:8080
       - DATABASE_URL=postgresql://rnotes:${DB_PASSWORD}@rnotes-postgres:5432/rnotes
-      - NEXT_PUBLIC_RSPACE_URL=${NEXT_PUBLIC_RSPACE_URL:-https://rspace.online}
-      - RSPACE_INTERNAL_URL=${RSPACE_INTERNAL_URL:-http://rspace-online:3000}
-      - NEXT_PUBLIC_ENCRYPTID_SERVER_URL=${NEXT_PUBLIC_ENCRYPTID_SERVER_URL:-https://encryptid.jeffemmett.com}
-      - RSPACE_INTERNAL_KEY=${RSPACE_INTERNAL_KEY}
-      - VOICE_API_URL=${VOICE_API_URL:-http://voice-command-api:8000}
-      - NEXT_PUBLIC_VOICE_WS_URL=${NEXT_PUBLIC_VOICE_WS_URL:-wss://voice.jeffemmett.com}
     volumes:
       - uploads_data:/app/uploads
     labels:
