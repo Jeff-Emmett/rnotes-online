@@ -1,10 +1,10 @@
 ---
 id: TASK-15
 title: 'EncryptID personal subdomains: <user>.r*.online with local-first data'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-02-25 03:01'
-updated_date: '2026-02-25 03:54'
+updated_date: '2026-02-25 04:48'
 labels:
   - architecture
   - auth
@@ -72,3 +72,27 @@ This is a cross-cutting feature affecting all rStack apps. Key areas:
 <!-- SECTION:NOTES:BEGIN -->
 Research complete - EncryptID uses DID format (did:key:z<base64url>, 50+ chars). DIDs too long for DNS labels (63 char limit). Username-based subdomains recommended but usernames are currently optional.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented username-based personal subdomains (`<username>.rnotes.online`) across 8 phases:
+
+**Phase 1 - Infrastructure**: DNS wildcard and Traefik routing already configured. Cloudflared needs manual `*.rnotes.online` entry.
+
+**Phase 2 - EncryptID**: Server already enforces username UNIQUE NOT NULL + includes in JWT. SDK updated: made `username` required in `EncryptIDClaims` type, updated `createSession()`.
+
+**Phase 3 - Schema**: Added `workspaceSlug` field to Notebook model with index + migration SQL.
+
+**Phase 4 - Middleware**: Sets `x-workspace-slug` header from subdomain extraction. New `workspace.ts` helper.
+
+**Phase 5 - API Filtering**: All GET endpoints filter by workspace on subdomains (notebooks, notes, search, notebook detail, notebook notes).
+
+**Phase 6 - AppSwitcher**: Fetches `/api/me` for username, generates `<username>.r*.online` links when logged in.
+
+**Phase 7 - Sessions**: `SubdomainSession` component syncs localStorage ↔ `.rnotes.online` domain-wide cookie. `authFetch` falls back to domain cookie.
+
+**Phase 8 - Migration**: Auto-assigns unscoped notebooks to user's workspace on auth.
+
+**Manual steps remaining**: Remove stale container on netcup, run migration, add cloudflared wildcard entry.
+<!-- SECTION:FINAL_SUMMARY:END -->
