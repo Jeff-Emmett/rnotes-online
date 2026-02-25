@@ -2,6 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { AppSwitcher } from '@/components/AppSwitcher';
+import { SpaceSwitcher } from '@/components/SpaceSwitcher';
+import { UserMenu } from '@/components/UserMenu';
 import { authFetch } from '@/lib/authFetch';
 
 // --- Types ---
@@ -509,32 +512,37 @@ export default function VoicePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-            </svg>
+      <header className="border-b border-slate-800 backdrop-blur-sm bg-[#0a0a0a]/90 sticky top-0 z-50">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <AppSwitcher current="notes" />
+            <SpaceSwitcher />
+            <span className="text-slate-600 hidden sm:inline">/</span>
+            <div className="flex items-center gap-2 ml-1">
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+              </div>
+              <span className="text-white font-bold text-sm hidden sm:inline">rVoice</span>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-bold text-sm">rVoice</h1>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Voice notes for rNotes</p>
+          <div className="flex items-center gap-2">
+            {streaming && (
+              <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Live
+              </span>
+            )}
+            {getSpeechRecognition() && state === 'recording' && !streaming && (
+              <span className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                Local
+              </span>
+            )}
+            <UserMenu />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {streaming && (
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              Live
-            </span>
-          )}
-          {getSpeechRecognition() && state === 'recording' && !streaming && (
-            <span className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              Local
-            </span>
-          )}
         </div>
       </header>
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
 import { SearchBar } from '@/components/SearchBar';
-import { UserMenu } from '@/components/UserMenu';
+import { Header } from '@/components/Header';
 
 interface NotebookData {
   id: string;
@@ -29,19 +29,10 @@ export default function NotebooksPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
-                rN
-              </div>
-              <span className="text-lg font-semibold text-white hidden sm:inline">rNotes</span>
-            </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-400">Notebooks</span>
-          </div>
-          <div className="flex items-center gap-2 md:gap-4">
+      <Header
+        breadcrumbs={[{ label: 'Notebooks' }]}
+        actions={
+          <>
             <div className="hidden md:block w-64">
               <SearchBar />
             </div>
@@ -52,10 +43,9 @@ export default function NotebooksPage() {
               <span className="hidden sm:inline">New Notebook</span>
               <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </Link>
-            <UserMenu />
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+      />
       {/* Mobile search */}
       <div className="md:hidden px-4 py-3 border-b border-slate-800">
         <SearchBar />

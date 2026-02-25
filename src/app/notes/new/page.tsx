@@ -2,11 +2,10 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
 import { FileUpload } from '@/components/FileUpload';
 import { VoiceRecorder } from '@/components/VoiceRecorder';
-import { UserMenu } from '@/components/UserMenu';
+import { Header } from '@/components/Header';
 import { authFetch } from '@/lib/authFetch';
 
 const NOTE_TYPES = [
@@ -120,18 +119,7 @@ function NewNoteForm() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
-              rN
-            </div>
-          </Link>
-          <span className="text-slate-600">/</span>
-          <span className="text-white">New Note</span>
-          <div className="ml-auto"><UserMenu /></div>
-        </div>
-      </nav>
+      <Header breadcrumbs={[{ label: 'New Note' }]} />
 
       <main className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
         <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">Create Note</h1>
