@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AppSwitcher } from '@/components/AppSwitcher';
 import { SpaceSwitcher } from '@/components/SpaceSwitcher';
@@ -113,6 +114,11 @@ export default function VoicePage() {
   const [modelDownloading, setModelDownloading] = useState(false);
   const [modelProgress, setModelProgress] = useState<WhisperProgress | null>(null);
 
+  // Picture-in-Picture
+  const [pipWindow, setPipWindow] = useState<Window | null>(null);
+  const [pipSupported, setPipSupported] = useState(false);
+  const pipContainerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     // Check install state
     const standalone = window.matchMedia('(display-mode: standalone)').matches
@@ -121,6 +127,9 @@ export default function VoicePage() {
 
     // Check model cache
     setModelCached(isModelCached());
+
+    // Check PiP support
+    setPipSupported('documentPictureInPicture' in window);
 
     // Capture install prompt
     const handler = (e: Event) => {
@@ -204,6 +213,59 @@ export default function VoicePage() {
       setModelDownloading(false);
     }
   }, [modelCached, modelDownloading]);
+
+  // --- Picture-in-Picture ---
+
+  const openPiP = useCallback(async () => {
+    if (!('documentPictureInPicture' in window)) return;
+
+    try {
+      const pip = await (window as any).documentPictureInPicture.requestWindow({
+        width: 360,
+        height: 320,
+      });
+
+      // Copy all stylesheets into PiP window
+      document.querySelectorAll('link[rel="stylesheet"], style').forEach((el) => {
+        pip.document.head.appendChild(el.cloneNode(true));
+      });
+
+      // Base styles for PiP body
+      pip.document.body.style.margin = '0';
+      pip.document.body.style.backgroundColor = '#0a0a0a';
+      pip.document.body.style.overflow = 'hidden';
+      pip.document.body.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+
+      // Create portal container
+      const container = pip.document.createElement('div');
+      pip.document.body.appendChild(container);
+      pipContainerRef.current = container as unknown as HTMLDivElement;
+
+      setPipWindow(pip);
+
+      pip.addEventListener('pagehide', () => {
+        setPipWindow(null);
+        pipContainerRef.current = null;
+      });
+    } catch (err) {
+      console.warn('PiP failed:', err);
+    }
+  }, []);
+
+  const closePiP = useCallback(() => {
+    if (pipWindow) {
+      pipWindow.close();
+      setPipWindow(null);
+      pipContainerRef.current = null;
+    }
+  }, [pipWindow]);
+
+  // Cleanup PiP on unmount
+  useEffect(() => {
+    return () => {
+      if (pipWindow) pipWindow.close();
+    };
+  }, [pipWindow]);
 
   // Load notebooks
   useEffect(() => {
@@ -609,6 +671,29 @@ export default function VoicePage() {
     return () => window.removeEventListener('keydown', handler);
   }, [toggleRecording, saveToRNotes, state]);
 
+  // Keyboard events inside PiP window
+  useEffect(() => {
+    if (!pipWindow) return;
+    const handler = (e: Event) => {
+      const ke = e as KeyboardEvent;
+      const target = ke.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable) return;
+
+      if (ke.code === 'Space') {
+        ke.preventDefault();
+        toggleRecording();
+      }
+      if ((ke.ctrlKey || ke.metaKey) && ke.code === 'Enter' && state === 'done') {
+        ke.preventDefault();
+        saveToRNotes();
+      }
+    };
+    pipWindow.document.addEventListener('keydown', handler);
+    return () => {
+      try { pipWindow.document.removeEventListener('keydown', handler); } catch {}
+    };
+  }, [pipWindow, toggleRecording, saveToRNotes, state]);
+
   // --- Render ---
 
   const hasLiveText = liveText || interimText || segments.length > 0;
@@ -645,6 +730,31 @@ export default function VoicePage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                 Local
               </span>
+            )}
+            {/* Pop out to floating window */}
+            {pipSupported && !pipWindow && (
+              <button
+                onClick={openPiP}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/80 border border-slate-700 rounded-full text-[11px] font-medium text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                title="Pop out to floating window"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8M3 17V7a2 2 0 012-2h6" />
+                </svg>
+                <span className="hidden sm:inline">Pop Out</span>
+              </button>
+            )}
+            {pipWindow && (
+              <button
+                onClick={closePiP}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full text-[11px] font-medium text-amber-400 hover:bg-amber-500/20 transition-colors"
+                title="Close floating window"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 17h-8m0 0v-8m0 8l8-8m10-3v10a2 2 0 01-2 2h-6" />
+                </svg>
+                <span className="hidden sm:inline">Pop In</span>
+              </button>
             )}
             {/* Install app button */}
             {!isInstalled && installPrompt && (
@@ -927,6 +1037,146 @@ export default function VoicePage() {
         </div>
         <a href="/" className="hover:text-amber-400 transition-colors">rNotes.online</a>
       </footer>
+
+      {/* PiP floating mini-recorder */}
+      {pipWindow && pipContainerRef.current && createPortal(
+        <div className="h-screen bg-[#0a0a0a] flex flex-col p-3 gap-3 select-none" style={{ colorScheme: 'dark' }}>
+          {/* PiP header */}
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                </svg>
+              </div>
+              <span className="text-white font-bold text-xs">rVoice</span>
+              {streaming && state === 'recording' && (
+                <span className="flex items-center gap-1 text-[9px] font-bold text-green-400 uppercase">
+                  <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                  Live
+                </span>
+              )}
+              {getSpeechRecognition() && state === 'recording' && !streaming && (
+                <span className="flex items-center gap-1 text-[9px] font-bold text-blue-400 uppercase">
+                  <span className="w-1 h-1 rounded-full bg-blue-400 animate-pulse" />
+                  Local
+                </span>
+              )}
+            </div>
+            <button
+              onClick={closePiP}
+              className="text-slate-500 hover:text-white transition-colors p-1"
+              title="Back to full view"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 17H3m0 0V9m0 8l8-8m10-3v10a2 2 0 01-2 2H13" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Record button + timer row */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={toggleRecording}
+              disabled={state === 'processing'}
+              className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all relative shrink-0 ${
+                state === 'recording'
+                  ? 'border-red-500 bg-slate-900'
+                  : state === 'processing'
+                  ? 'border-slate-600 bg-slate-900 opacity-50'
+                  : 'border-slate-600 bg-slate-900 hover:border-red-500'
+              }`}
+            >
+              <div className={`transition-all ${
+                state === 'recording'
+                  ? 'w-5 h-5 rounded-sm bg-red-500'
+                  : 'w-7 h-7 rounded-full bg-red-500'
+              }`} />
+              {state === 'recording' && (
+                <span className="absolute inset-[-4px] rounded-full border border-red-500/30 animate-ping" />
+              )}
+            </button>
+            <div>
+              <div className={`text-2xl font-mono font-bold tracking-wider ${
+                state === 'recording' ? 'text-red-500' : 'text-slate-300'
+              }`}>
+                {formatTime(state === 'done' ? duration : elapsed)}
+              </div>
+              <p className="text-[10px] text-slate-500">
+                {state === 'idle' && 'Tap or Space'}
+                {state === 'recording' && 'Recording... tap to stop'}
+                {state === 'processing' && (offlineProgress?.message || 'Processing...')}
+                {state === 'done' && 'Recording complete'}
+              </p>
+            </div>
+          </div>
+
+          {/* Live transcript (while recording) */}
+          {state === 'recording' && hasLiveText && (
+            <div className="flex-1 min-h-0 bg-slate-900/50 border border-slate-800 rounded-lg p-2.5 overflow-y-auto">
+              <p className="text-xs text-slate-300 leading-relaxed">
+                {segments.length > 0 ? segments.map((s) => s.text).join(' ') : liveText}
+                {interimText && <span className="text-slate-500 italic"> {interimText}</span>}
+              </p>
+            </div>
+          )}
+
+          {/* Done state: transcript + actions */}
+          {state === 'done' && (
+            <>
+              <div className="flex-1 min-h-0 bg-slate-900/50 border border-slate-800 rounded-lg p-2.5 overflow-y-auto">
+                {finalTranscript ? (
+                  <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{finalTranscript}</p>
+                ) : (
+                  <p className="text-xs text-slate-500 italic">No transcript available</p>
+                )}
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={discard}
+                  className="flex-1 px-2 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-400 hover:text-white transition-colors"
+                >
+                  Discard
+                </button>
+                {hasTranscript && (
+                  <button
+                    onClick={copyTranscript}
+                    className="px-3 py-2 bg-slate-800 border border-blue-500/30 rounded-lg text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Copy
+                  </button>
+                )}
+                <button
+                  onClick={saveToRNotes}
+                  disabled={saving}
+                  className="flex-1 px-2 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 disabled:text-slate-500 text-black font-semibold rounded-lg text-xs transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Status */}
+          {status && (
+            <div className={`text-center text-[10px] px-2 py-1.5 rounded-lg shrink-0 ${
+              status.type === 'success' ? 'bg-green-900/30 text-green-400 border border-green-800' :
+              status.type === 'error' ? 'bg-red-900/30 text-red-400 border border-red-800' :
+              'bg-blue-900/30 text-blue-400 border border-blue-800'
+            }`}>
+              {status.message}
+            </div>
+          )}
+
+          {/* PiP footer hint */}
+          <div className="text-[9px] text-slate-600 text-center shrink-0">
+            <kbd className="px-1 py-0.5 bg-slate-900 border border-slate-700 rounded text-[9px]">Space</kbd> record
+            {' '}<kbd className="px-1 py-0.5 bg-slate-900 border border-slate-700 rounded text-[9px]">Ctrl+&#x23CE;</kbd> save
+          </div>
+        </div>,
+        pipContainerRef.current
+      )}
     </div>
   );
 }
