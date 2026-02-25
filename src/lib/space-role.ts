@@ -16,7 +16,7 @@ import {
 } from '@encryptid/sdk/types';
 import { RNOTES_PERMISSIONS } from '@encryptid/sdk/types/modules';
 
-const ENCRYPTID_SERVER = process.env.ENCRYPTID_SERVER_URL || 'https://encryptid.jeffemmett.com';
+const ENCRYPTID_SERVER = process.env.ENCRYPTID_SERVER_URL || 'https://auth.ridentity.online';
 
 // In-memory cache (5 minute TTL)
 const roleCache = new Map<string, { role: ResolvedRole; expires: number }>();

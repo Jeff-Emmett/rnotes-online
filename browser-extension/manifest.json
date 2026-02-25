@@ -12,7 +12,7 @@
   ],
   "host_permissions": [
     "https://rnotes.online/*",
-    "https://encryptid.jeffemmett.com/*",
+    "https://auth.ridentity.online/*",
     "*://*/*"
   ],
   "action": {
