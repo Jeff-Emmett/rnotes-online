@@ -16,7 +16,7 @@ const MODULES: AppModule[] = [
   // Creating
   { id: 'space',    name: 'rSpace',    badge: 'rS',  color: 'bg-teal-300',    emoji: '🎨', description: 'Real-time collaborative canvas',               domain: 'rspace.online' },
   { id: 'notes',    name: 'rNotes',    badge: 'rN',  color: 'bg-amber-300',   emoji: '📝', description: 'Group note-taking & knowledge capture',        domain: 'rnotes.online' },
-  { id: 'pubs',     name: 'rPubs',     badge: 'rP',  color: 'bg-rose-300',    emoji: '📰', description: 'Collaborative publishing platform',              domain: 'rpubs.online' },
+  { id: 'pubs',     name: 'rPubs',     badge: 'rP',  color: 'bg-rose-300',    emoji: '📖', description: 'Collaborative publishing platform',              domain: 'rpubs.online' },
   // Planning
   { id: 'cal',      name: 'rCal',      badge: 'rC',  color: 'bg-sky-300',     emoji: '📅', description: 'Collaborative scheduling & events',             domain: 'rcal.online' },
   { id: 'trips',    name: 'rTrips',    badge: 'rT',  color: 'bg-emerald-300', emoji: '✈️', description: 'Group travel planning in real time',            domain: 'rtrips.online' },
@@ -27,7 +27,7 @@ const MODULES: AppModule[] = [
   { id: 'mail',     name: 'rMail',     badge: 'rMa', color: 'bg-blue-200',    emoji: '✉️', description: 'Community email & newsletters',                 domain: 'rmail.online' },
   { id: 'forum',    name: 'rForum',    badge: 'rFo', color: 'bg-amber-200',   emoji: '💭', description: 'Threaded community discussions',                domain: 'rforum.online' },
   // Deciding
-  { id: 'choices',  name: 'rChoices',  badge: 'rCo', color: 'bg-fuchsia-300', emoji: '🔀', description: 'Collaborative decision making',                 domain: 'rchoices.online' },
+  { id: 'choices',  name: 'rChoices',  badge: 'rCo', color: 'bg-fuchsia-300', emoji: '⚖️', description: 'Collaborative decision making',                 domain: 'rchoices.online' },
   { id: 'vote',     name: 'rVote',     badge: 'rV',  color: 'bg-violet-300',  emoji: '🗳️', description: 'Real-time polls & governance',                  domain: 'rvote.online' },
   // Funding & Commerce
   { id: 'funds',    name: 'rFunds',    badge: 'rF',  color: 'bg-lime-300',    emoji: '💸', description: 'Collaborative fundraising & grants',            domain: 'rfunds.online' },
@@ -38,14 +38,14 @@ const MODULES: AppModule[] = [
   // Social & Media
   { id: 'photos',   name: 'rPhotos',   badge: 'rPh', color: 'bg-pink-200',    emoji: '📸', description: 'Shared community photo albums',                domain: 'rphotos.online' },
   { id: 'tube',     name: 'rTube',     badge: 'rTu', color: 'bg-pink-300',    emoji: '🎬', description: 'Group video platform',                          domain: 'rtube.online' },
-  { id: 'network',  name: 'rNetwork',  badge: 'rNe', color: 'bg-blue-300',    emoji: '🌐', description: 'Community network & social graph',              domain: 'rnetwork.online' },
+  { id: 'network',  name: 'rNetwork',  badge: 'rNe', color: 'bg-blue-300',    emoji: '🕸️', description: 'Community network & social graph',              domain: 'rnetwork.online' },
   { id: 'socials',  name: 'rSocials',  badge: 'rSo', color: 'bg-sky-200',     emoji: '📢', description: 'Social media management',                      domain: 'rsocials.online' },
   { id: 'files',    name: 'rFiles',    badge: 'rFi', color: 'bg-cyan-300',    emoji: '📁', description: 'Collaborative file storage',                    domain: 'rfiles.online' },
   { id: 'data',     name: 'rData',     badge: 'rD',  color: 'bg-purple-300',  emoji: '📊', description: 'Analytics & insights dashboard',                domain: 'rdata.online' },
   // Work & Productivity
-  { id: 'work',     name: 'rWork',     badge: 'rWo', color: 'bg-slate-300',   emoji: '💼', description: 'Project & task management',                     domain: 'rwork.online' },
+  { id: 'work',     name: 'rWork',     badge: 'rWo', color: 'bg-slate-300',   emoji: '📋', description: 'Project & task management',                     domain: 'rwork.online' },
   // Identity & Infrastructure
-  { id: 'ids',      name: 'rIDs',      badge: 'rId', color: 'bg-emerald-300', emoji: '🔑', description: 'Passkey identity & zero-knowledge auth',       domain: 'ridentity.online' },
+  { id: 'ids',      name: 'rIDs',      badge: 'rId', color: 'bg-emerald-300', emoji: '🔐', description: 'Passkey identity & zero-knowledge auth',       domain: 'ridentity.online' },
   { id: 'stack',    name: 'rStack',    badge: 'r*',  color: 'bg-gradient-to-br from-cyan-300 via-violet-300 to-rose-300', emoji: '📦', description: 'Open-source community infrastructure', domain: 'rstack.online' },
 ];
 
