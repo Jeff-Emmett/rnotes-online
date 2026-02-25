@@ -339,16 +339,13 @@ export default function VoicePage() {
     const url = URL.createObjectURL(blob);
     setAudioUrl(url);
 
-    // --- Three-tier transcription cascade ---
-
-    // Show immediate live text while we process
-    const immediateLive = wsFullText || (segmentsRef.current.length > 0
+    // Use live transcript immediately (best quality in practice)
+    const liveResult = wsFullText || (segmentsRef.current.length > 0
       ? segmentsRef.current.map(s => s.text).join(' ')
       : capturedLive);
-    if (immediateLive) setFinalTranscript(immediateLive);
+    setFinalTranscript(liveResult || '');
 
-    // Tier 1: Upload + batch API
-    let bestTranscript = '';
+    // Upload audio file in background (needed for AUDIO note, not for transcript)
     try {
       setStatus({ message: 'Uploading recording...', type: 'loading' });
       const uploadForm = new FormData();
@@ -360,36 +357,24 @@ export default function VoicePage() {
         setUploadedFileUrl(uploadResult.url);
         setUploadedMimeType(uploadResult.mimeType);
         setUploadedFileSize(uploadResult.size);
-
-        setStatus({ message: 'Transcribing...', type: 'loading' });
-        const tForm = new FormData();
-        tForm.append('audio', blob, 'voice-note.webm');
-        const tRes = await authFetch('/api/voice/transcribe', { method: 'POST', body: tForm });
-        if (tRes.ok) {
-          const tResult = await tRes.json();
-          bestTranscript = tResult.text || '';
-        }
       }
     } catch {
-      console.warn('Tier 1 (batch API) failed');
+      console.warn('Audio upload failed');
     }
 
-    // Tier 2: WebSocket / Web Speech API (already captured)
-    if (!bestTranscript) bestTranscript = immediateLive || '';
-
-    // Tier 3: Offline Parakeet.js
-    if (!bestTranscript) {
+    // If no live transcript at all, try offline Parakeet as last resort
+    if (!liveResult) {
       try {
         setStatus({ message: 'Loading offline model...', type: 'loading' });
         const { transcribeOffline } = await import('@/lib/parakeetOffline');
-        bestTranscript = await transcribeOffline(blob, (p) => setOfflineProgress(p));
+        const offlineText = await transcribeOffline(blob, (p) => setOfflineProgress(p));
+        setFinalTranscript(offlineText);
         setOfflineProgress(null);
       } catch {
         setOfflineProgress(null);
       }
     }
 
-    setFinalTranscript(bestTranscript);
     setStatus(null);
     setState('done');
   }, [audioUrl, stopSpeechRecognition, cleanupStreaming]);
