@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
 import { SearchBar } from '@/components/SearchBar';
-import { Header } from '@/components/Header';
 import { EcosystemFooter } from '@/components/EcosystemFooter';
 import { TranscriptionDemo } from '@/components/TranscriptionDemo';
 
@@ -31,36 +30,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <Header
-        current="notes"
-        actions={
-          <>
-            <div className="hidden md:block w-64">
-              <SearchBar />
-            </div>
-            <Link
-              href="/ai"
-              className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
-            >
-              AI
-            </Link>
-            <Link
-              href="/demo"
-              className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
-            >
-              Demo
-            </Link>
-            <Link
-              href="/notebooks/new"
-              className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
-            >
-              <span className="hidden sm:inline">Create Notebook</span>
-              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            </Link>
-          </>
-        }
-      />
-
       {/* Mobile search */}
       <div className="md:hidden px-4 py-3 border-b border-slate-800">
         <SearchBar />

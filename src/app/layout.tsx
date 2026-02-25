@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { PWAInstall } from '@/components/PWAInstall'
 import { SubdomainSession } from '@/components/SubdomainSession'
+import { Header } from '@/components/Header'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
           <SubdomainSession />
+          <Header current="notes" />
           {children}
           <PWAInstall />
         </AuthProvider>
