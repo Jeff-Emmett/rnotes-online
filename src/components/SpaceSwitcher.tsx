@@ -9,12 +9,22 @@ interface SpaceInfo {
   role?: string;
 }
 
-export function SpaceSwitcher() {
+interface SpaceSwitcherProps {
+  /** Current app domain, e.g. 'rfunds.online'. Space links become <space>.<domain> */
+  domain?: string;
+}
+
+export function SpaceSwitcher({ domain }: SpaceSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [spaces, setSpaces] = useState<SpaceInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Derive domain from window.location if not provided
+  const appDomain = domain || (typeof window !== 'undefined'
+    ? window.location.hostname.split('.').slice(-2).join('.')
+    : 'rspace.online');
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -58,6 +68,9 @@ export function SpaceSwitcher() {
     }
   };
 
+  /** Build URL for a space: <space>.<current-app-domain> */
+  const spaceUrl = (slug: string) => `https://${slug}.${appDomain}`;
+
   const mySpaces = spaces.filter((s) => s.role);
   const publicSpaces = spaces.filter((s) => !s.role);
 
@@ -99,7 +112,7 @@ export function SpaceSwitcher() {
                   {mySpaces.map((s) => (
                     <a
                       key={s.slug}
-                      href={`https://rspace.online/${s.slug}`}
+                      href={spaceUrl(s.slug)}
                       className="flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors hover:bg-white/[0.05]"
                       onClick={() => setOpen(false)}
                     >
@@ -124,7 +137,7 @@ export function SpaceSwitcher() {
                   {publicSpaces.map((s) => (
                     <a
                       key={s.slug}
-                      href={`https://rspace.online/${s.slug}`}
+                      href={spaceUrl(s.slug)}
                       className="flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors hover:bg-white/[0.05]"
                       onClick={() => setOpen(false)}
                     >
