@@ -20,6 +20,7 @@ const MODULES: AppModule[] = [
   // Planning
   { id: 'cal',      name: 'rCal',      badge: 'rC',  color: 'bg-sky-300',     emoji: '📅', description: 'Collaborative scheduling & events',             domain: 'rcal.online' },
   { id: 'trips',    name: 'rTrips',    badge: 'rT',  color: 'bg-emerald-300', emoji: '✈️', description: 'Group travel planning in real time',            domain: 'rtrips.online' },
+  { id: 'maps',     name: 'rMaps',     badge: 'rM',  color: 'bg-green-300',   emoji: '🗺️', description: 'Collaborative real-time mapping',               domain: 'rmaps.online' },
   // Discussing & Deciding
   { id: 'inbox',    name: 'rInbox',    badge: 'rI',  color: 'bg-indigo-300',  emoji: '📬', description: 'Self-hosted group messaging',                   domain: 'rinbox.online' },
   { id: 'choices',  name: 'rChoices',  badge: 'rCh', color: 'bg-fuchsia-300', emoji: '🔀', description: 'Collaborative decision making',                 domain: 'rchoices.online' },
@@ -29,12 +30,11 @@ const MODULES: AppModule[] = [
   { id: 'wallet',   name: 'rWallet',   badge: 'rW',  color: 'bg-yellow-300',  emoji: '👛', description: 'Self-hosted crypto wallet',                     domain: 'rwallet.online' },
   { id: 'cart',     name: 'rCart',      badge: 'rCt', color: 'bg-orange-300',  emoji: '🛒', description: 'Group commerce & shared shopping',              domain: 'rcart.online' },
   { id: 'auctions', name: 'rAuctions', badge: 'rA',  color: 'bg-red-300',     emoji: '🔨', description: 'Community auction platform',                    domain: 'rauctions.online' },
-  // Sharing & Media
+  // Social & Sharing
+  { id: 'network',  name: 'rNetwork',  badge: 'rNe', color: 'bg-blue-300',    emoji: '🌐', description: 'Self-hosted community network',                 domain: 'rnetwork.online' },
   { id: 'files',    name: 'rFiles',    badge: 'rFi', color: 'bg-cyan-300',    emoji: '📁', description: 'Self-hosted collaborative file storage',        domain: 'rfiles.online' },
   { id: 'tube',     name: 'rTube',     badge: 'rTu', color: 'bg-pink-300',    emoji: '🎬', description: 'Community-run video platform',                  domain: 'rtube.online' },
   { id: 'data',     name: 'rData',     badge: 'rD',  color: 'bg-purple-300',  emoji: '📊', description: 'Self-hosted analytics & insights',              domain: 'rdata.online' },
-  { id: 'maps',     name: 'rMaps',     badge: 'rM',  color: 'bg-green-300',   emoji: '🗺️', description: 'Collaborative real-time mapping',               domain: 'rmaps.online' },
-  { id: 'network',  name: 'rNetwork',  badge: 'rNe', color: 'bg-blue-300',    emoji: '🌐', description: 'Self-hosted community network',                 domain: 'rnetwork.online' },
 ];
 
 const MODULE_CATEGORIES: Record<string, string> = {
@@ -50,11 +50,11 @@ const MODULE_CATEGORIES: Record<string, string> = {
   wallet:  'Funding & Commerce',
   cart:    'Funding & Commerce',
   auctions:'Funding & Commerce',
-  files:   'Sharing & Media',
-  tube:    'Sharing & Media',
-  data:    'Sharing & Media',
-  maps:    'Sharing & Media',
-  network: 'Sharing & Media',
+  maps:    'Planning',
+  network: 'Social & Sharing',
+  files:   'Social & Sharing',
+  tube:    'Social & Sharing',
+  data:    'Social & Sharing',
 };
 
 const CATEGORY_ORDER = [
@@ -62,7 +62,7 @@ const CATEGORY_ORDER = [
   'Planning',
   'Discussing & Deciding',
   'Funding & Commerce',
-  'Sharing & Media',
+  'Social & Sharing',
 ];
 
 interface AppSwitcherProps {
