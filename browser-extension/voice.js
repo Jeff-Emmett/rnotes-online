@@ -9,10 +9,15 @@ let startTime = 0;
 let audioBlob = null;
 let audioUrl = null;
 let transcript = '';
+let liveTranscript = ''; // accumulated from Web Speech API
 let uploadedFileUrl = '';
 let uploadedMimeType = '';
 let uploadedFileSize = 0;
 let duration = 0;
+
+// Web Speech API
+let recognition = null;
+let speechSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
 // --- DOM refs ---
 const recBtn = document.getElementById('recBtn');
@@ -20,6 +25,7 @@ const timerEl = document.getElementById('timer');
 const statusLabel = document.getElementById('statusLabel');
 const transcriptArea = document.getElementById('transcriptArea');
 const transcriptText = document.getElementById('transcriptText');
+const liveIndicator = document.getElementById('liveIndicator');
 const audioPreview = document.getElementById('audioPreview');
 const audioPlayer = document.getElementById('audioPlayer');
 const notebookSelect = document.getElementById('notebook');
@@ -70,6 +76,36 @@ function showStatusBar(message, type) {
   }
 }
 
+// --- Parakeet progress UI ---
+
+const progressArea = document.getElementById('progressArea');
+const progressLabel = document.getElementById('progressLabel');
+const progressFill = document.getElementById('progressFill');
+
+function showParakeetProgress(p) {
+  if (!progressArea) return;
+  progressArea.classList.add('visible');
+
+  if (p.message) {
+    progressLabel.textContent = p.message;
+  }
+
+  if (p.status === 'downloading' && p.progress !== undefined) {
+    progressFill.style.width = `${p.progress}%`;
+  } else if (p.status === 'transcribing') {
+    progressFill.style.width = '100%';
+  } else if (p.status === 'loading') {
+    progressFill.style.width = '0%';
+  }
+}
+
+function hideParakeetProgress() {
+  if (progressArea) {
+    progressArea.classList.remove('visible');
+    progressFill.style.width = '0%';
+  }
+}
+
 // --- Notebook loader ---
 
 async function loadNotebooks() {
@@ -103,6 +139,97 @@ notebookSelect.addEventListener('change', (e) => {
   chrome.storage.local.set({ lastNotebookId: e.target.value });
 });
 
+// --- Live transcription (Web Speech API) ---
+
+function startLiveTranscription() {
+  if (!speechSupported) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  let finalizedText = '';
+
+  recognition.onresult = (event) => {
+    let interimText = '';
+    // Rebuild finalized text from all final results
+    finalizedText = '';
+    for (let i = 0; i < event.results.length; i++) {
+      const result = event.results[i];
+      if (result.isFinal) {
+        finalizedText += result[0].transcript.trim() + ' ';
+      } else {
+        interimText += result[0].transcript;
+      }
+    }
+
+    liveTranscript = finalizedText.trim();
+
+    // Update the live transcript display
+    updateLiveDisplay(finalizedText.trim(), interimText.trim());
+  };
+
+  recognition.onerror = (event) => {
+    if (event.error !== 'aborted' && event.error !== 'no-speech') {
+      console.warn('Speech recognition error:', event.error);
+    }
+  };
+
+  // Auto-restart on end (Chrome stops after ~60s of silence)
+  recognition.onend = () => {
+    if (state === 'recording' && recognition) {
+      try { recognition.start(); } catch {}
+    }
+  };
+
+  try {
+    recognition.start();
+    if (liveIndicator) liveIndicator.classList.add('visible');
+  } catch (err) {
+    console.warn('Could not start speech recognition:', err);
+    speechSupported = false;
+  }
+}
+
+function stopLiveTranscription() {
+  if (recognition) {
+    const ref = recognition;
+    recognition = null;
+    try { ref.stop(); } catch {}
+  }
+  if (liveIndicator) liveIndicator.classList.remove('visible');
+}
+
+function updateLiveDisplay(finalText, interimText) {
+  if (state !== 'recording') return;
+
+  // Show transcript area while recording
+  transcriptArea.classList.add('visible');
+
+  let html = '';
+  if (finalText) {
+    html += `<span class="final-text">${escapeHtml(finalText)}</span>`;
+  }
+  if (interimText) {
+    html += `<span class="interim-text">${escapeHtml(interimText)}</span>`;
+  }
+  if (!finalText && !interimText) {
+    html = '<span class="placeholder">Listening...</span>';
+  }
+  transcriptText.innerHTML = html;
+
+  // Auto-scroll
+  transcriptText.scrollTop = transcriptText.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // --- Recording ---
 
 async function startRecording() {
@@ -115,6 +242,7 @@ async function startRecording() {
 
     mediaRecorder = new MediaRecorder(stream, { mimeType });
     audioChunks = [];
+    liveTranscript = '';
 
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) audioChunks.push(e.data);
@@ -130,13 +258,23 @@ async function startRecording() {
     setStatusLabel('Recording', 'recording');
     postActions.style.display = 'none';
     audioPreview.classList.remove('visible');
-    transcriptArea.classList.remove('visible');
     statusBar.className = 'status-bar';
+
+    // Show transcript area with listening placeholder
+    if (speechSupported) {
+      transcriptArea.classList.add('visible');
+      transcriptText.innerHTML = '<span class="placeholder">Listening...</span>';
+    } else {
+      transcriptArea.classList.remove('visible');
+    }
 
     timerInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       timerEl.textContent = formatTime(elapsed);
     }, 1000);
+
+    // Start live transcription alongside recording
+    startLiveTranscription();
 
   } catch (err) {
     showStatusBar(err.message || 'Microphone access denied', 'error');
@@ -149,6 +287,12 @@ async function stopRecording() {
   clearInterval(timerInterval);
   timerInterval = null;
   duration = Math.floor((Date.now() - startTime) / 1000);
+
+  // Capture live transcript before stopping recognition
+  const capturedLiveTranscript = liveTranscript;
+
+  // Stop live transcription
+  stopLiveTranscription();
 
   state = 'processing';
   recBtn.classList.remove('recording');
@@ -170,17 +314,21 @@ async function stopRecording() {
   audioPlayer.src = audioUrl;
   audioPreview.classList.add('visible');
 
-  // Show transcript area with placeholder
+  // Show live transcript while we process (if we have one)
   transcriptArea.classList.add('visible');
-  transcriptText.innerHTML = '<span class="placeholder">Transcribing...</span>';
+  if (capturedLiveTranscript) {
+    transcriptText.textContent = capturedLiveTranscript;
+    showStatusBar('Improving transcript...', 'loading');
+  } else {
+    transcriptText.innerHTML = '<span class="placeholder">Transcribing...</span>';
+    showStatusBar('Uploading & transcribing...', 'loading');
+  }
 
   // Upload audio file
   const token = await getToken();
   const settings = await getSettings();
 
   try {
-    showStatusBar('Uploading recording...', 'loading');
-
     const uploadForm = new FormData();
     uploadForm.append('file', audioBlob, 'voice-note.webm');
 
@@ -197,25 +345,49 @@ async function stopRecording() {
     uploadedMimeType = uploadResult.mimeType;
     uploadedFileSize = uploadResult.size;
 
-    // Transcribe via batch API
-    showStatusBar('Transcribing...', 'loading');
+    // --- Three-tier transcription cascade ---
 
-    const transcribeForm = new FormData();
-    transcribeForm.append('audio', audioBlob, 'voice-note.webm');
+    // Tier 1: Batch API (Whisper on server — highest quality)
+    let bestTranscript = '';
+    try {
+      showStatusBar('Transcribing via server...', 'loading');
+      const transcribeForm = new FormData();
+      transcribeForm.append('audio', audioBlob, 'voice-note.webm');
 
-    const transcribeRes = await fetch(`${settings.host}/api/voice/transcribe`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: transcribeForm,
-    });
+      const transcribeRes = await fetch(`${settings.host}/api/voice/transcribe`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: transcribeForm,
+      });
 
-    if (transcribeRes.ok) {
-      const transcribeResult = await transcribeRes.json();
-      transcript = transcribeResult.text || '';
-    } else {
-      transcript = '';
-      console.warn('Transcription failed, saving without transcript');
+      if (transcribeRes.ok) {
+        const transcribeResult = await transcribeRes.json();
+        bestTranscript = transcribeResult.text || '';
+      }
+    } catch {
+      console.warn('Tier 1 (batch API) unavailable');
     }
+
+    // Tier 2: Live transcript from Web Speech API (already captured)
+    if (!bestTranscript && capturedLiveTranscript) {
+      bestTranscript = capturedLiveTranscript;
+    }
+
+    // Tier 3: Offline Parakeet.js (NVIDIA, runs in browser)
+    if (!bestTranscript && window.ParakeetOffline) {
+      try {
+        showStatusBar('Transcribing offline (Parakeet)...', 'loading');
+        bestTranscript = await window.ParakeetOffline.transcribeOffline(audioBlob, (p) => {
+          showParakeetProgress(p);
+        });
+        hideParakeetProgress();
+      } catch (offlineErr) {
+        console.warn('Tier 3 (Parakeet offline) failed:', offlineErr);
+        hideParakeetProgress();
+      }
+    }
+
+    transcript = bestTranscript;
 
     // Show transcript (editable)
     if (transcript) {
@@ -230,6 +402,26 @@ async function stopRecording() {
     statusBar.className = 'status-bar';
 
   } catch (err) {
+    // On upload error, try offline transcription directly
+    let fallbackTranscript = capturedLiveTranscript || '';
+
+    if (!fallbackTranscript && window.ParakeetOffline) {
+      try {
+        showStatusBar('Upload failed, transcribing offline...', 'loading');
+        fallbackTranscript = await window.ParakeetOffline.transcribeOffline(audioBlob, (p) => {
+          showParakeetProgress(p);
+        });
+        hideParakeetProgress();
+      } catch {
+        hideParakeetProgress();
+      }
+    }
+
+    transcript = fallbackTranscript;
+    if (transcript) {
+      transcriptText.textContent = transcript;
+    }
+
     showStatusBar(`Error: ${err.message}`, 'error');
     state = 'done';
     setStatusLabel('Error', 'idle');
@@ -341,10 +533,13 @@ function resetState() {
   audioChunks = [];
   audioBlob = null;
   transcript = '';
+  liveTranscript = '';
   uploadedFileUrl = '';
   uploadedMimeType = '';
   uploadedFileSize = 0;
   duration = 0;
+
+  stopLiveTranscription();
 
   if (audioUrl) {
     URL.revokeObjectURL(audioUrl);
@@ -358,6 +553,7 @@ function resetState() {
   postActions.style.display = 'none';
   audioPreview.classList.remove('visible');
   transcriptArea.classList.remove('visible');
+  hideParakeetProgress();
   statusBar.className = 'status-bar';
 }
 

@@ -175,6 +175,13 @@
       color: #525252;
       font-style: italic;
     }
+    .transcript-text .final-text {
+      color: #d4d4d4;
+    }
+    .transcript-text .interim-text {
+      color: #737373;
+      font-style: italic;
+    }
 
     /* Controls row */
     .controls {
@@ -255,6 +262,61 @@
     .status-bar.error { color: #fca5a5; background: #450a0a; border-top-color: #991b1b; }
     .status-bar.loading { color: #93c5fd; background: #172554; border-top-color: #1e40af; }
 
+    /* Live indicator */
+    .live-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #4ade80;
+    }
+    .live-indicator.visible {
+      display: flex;
+    }
+    .live-indicator .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse-dot 1s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Progress bar (for model download) */
+    .progress-area {
+      width: 100%;
+      padding: 0 14px 8px;
+      display: none;
+    }
+    .progress-area.visible {
+      display: block;
+    }
+    .progress-label {
+      font-size: 11px;
+      color: #a3a3a3;
+      margin-bottom: 4px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #262626;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      background: #f59e0b;
+      border-radius: 3px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
     /* Audio preview */
     .audio-preview {
       width: 100%;
@@ -305,6 +367,15 @@
       <div class="inner"></div>
     </button>
     <div class="timer" id="timer">00:00</div>
+    <div class="live-indicator" id="liveIndicator">
+      <span class="dot"></span>
+      Live transcribe
+    </div>
+  </div>
+
+  <div class="progress-area" id="progressArea">
+    <div class="progress-label" id="progressLabel">Loading model...</div>
+    <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
   </div>
 
   <div class="audio-preview" id="audioPreview">
@@ -334,9 +405,10 @@
   <div class="status-bar" id="statusBar"></div>
 
   <div class="kbd-hint">
-    <kbd>Space</kbd> to record &middot; <kbd>Esc</kbd> to close
+    <kbd>Space</kbd> to record &middot; <kbd>Esc</kbd> to close &middot; Offline ready
   </div>
 
+  <script src="parakeet-offline.js" type="module"></script>
   <script src="voice.js"></script>
 </body>
 </html>
