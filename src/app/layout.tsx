@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { PWAInstall } from '@/components/PWAInstall'
+import { SubdomainSession } from '@/components/SubdomainSession'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -46,6 +47,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <AuthProvider>
+          <SubdomainSession />
           {children}
           <PWAInstall />
         </AuthProvider>

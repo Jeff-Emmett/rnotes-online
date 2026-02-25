@@ -1,15 +1,23 @@
 const TOKEN_KEY = 'encryptid_token';
 
+function getCookieToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)encryptid_token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 /**
  * Authenticated fetch wrapper.
- * Reads JWT from localStorage and adds Authorization header.
+ * Reads JWT from localStorage (primary) or domain cookie (fallback).
  * On 401, redirects to signin page.
  */
 export async function authFetch(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem(TOKEN_KEY) || getCookieToken())
+    : null;
 
   const headers = new Headers(options.headers);
   if (token) {

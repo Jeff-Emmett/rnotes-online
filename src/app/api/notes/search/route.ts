@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getWorkspaceSlug } from '@/lib/workspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
     const cardType = searchParams.get('cardType');
     const notebookId = searchParams.get('notebookId');
+    const workspaceSlug = getWorkspaceSlug();
 
     if (!q) {
       return NextResponse.json({ error: 'Query parameter q is required' }, { status: 400 });
@@ -30,6 +32,12 @@ export async function GET(request: NextRequest) {
     if (notebookId) {
       params.push(notebookId);
       filters.push(`n."notebookId" = $${params.length}`);
+    }
+
+    // Workspace boundary: only search within the current workspace's notebooks
+    if (workspaceSlug) {
+      params.push(workspaceSlug);
+      filters.push(`nb."workspaceSlug" = $${params.length}`);
     }
 
     const whereClause = filters.length > 0 ? `AND ${filters.join(' AND ')}` : '';

@@ -25,23 +25,25 @@ model User {
 // ─── Notebooks ──────────────────────────────────────────────────────
 
 model Notebook {
-  id            String   @id @default(cuid())
-  title         String
-  slug          String   @unique
-  description   String?  @db.Text
-  coverColor    String   @default("#f59e0b")
-  canvasSlug    String?
-  canvasShapeId String?
-  isPublic      Boolean  @default(false)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  description    String?  @db.Text
+  coverColor     String   @default("#f59e0b")
+  canvasSlug     String?
+  canvasShapeId  String?
+  isPublic       Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  workspaceSlug  String   @default("")  // subdomain scope: "" = personal/unscoped
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   collaborators NotebookCollaborator[]
   notes         Note[]
   sharedAccess  SharedAccess[]
 
   @@index([slug])
+  @@index([workspaceSlug])
 }
 
 enum CollaboratorRole {

@@ -9,17 +9,33 @@ export function middleware(request: NextRequest) {
 
   if (match && !RESERVED_SUBDOMAINS.has(match[1])) {
     const space = match[1];
-    const response = NextResponse.next();
+
+    // Clone headers and add workspace context for API routes
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-workspace-slug', space);
+
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+
+    // Set cookie for client-side access
     response.cookies.set('rnotes-space', space, {
       path: '/',
       httpOnly: false,
       sameSite: 'lax',
       secure: true,
     });
+
     return response;
   }
 
-  return NextResponse.next();
+  // Bare domain: set empty workspace header
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-workspace-slug', '');
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {

@@ -3,12 +3,26 @@ import { prisma } from '@/lib/prisma';
 import { stripHtml } from '@/lib/strip-html';
 import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
 import { htmlToTipTapJson, tipTapJsonToMarkdown, mapNoteTypeToCardType } from '@/lib/content-convert';
+import { getWorkspaceSlug } from '@/lib/workspace';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceSlug = getWorkspaceSlug();
+
+    // Verify notebook belongs to current workspace
+    if (workspaceSlug) {
+      const notebook = await prisma.notebook.findUnique({
+        where: { id: params.id },
+        select: { workspaceSlug: true },
+      });
+      if (!notebook || notebook.workspaceSlug !== workspaceSlug) {
+        return NextResponse.json({ error: 'Notebook not found' }, { status: 404 });
+      }
+    }
+
     const notes = await prisma.note.findMany({
       where: { notebookId: params.id, archivedAt: null },
       include: {

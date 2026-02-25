@@ -65,12 +65,23 @@ const CATEGORY_ORDER = [
   'Social & Sharing',
 ];
 
+/** Build the URL for a module, using username subdomain if logged in */
+function getModuleUrl(m: AppModule, username: string | null): string {
+  if (!m.domain) return '#';
+  if (username) {
+    // Generate <username>.<domain> URL
+    return `https://${username}.${m.domain}`;
+  }
+  return `https://${m.domain}`;
+}
+
 interface AppSwitcherProps {
   current?: string;
 }
 
 export function AppSwitcher({ current = 'notes' }: AppSwitcherProps) {
   const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,6 +92,18 @@ export function AppSwitcher({ current = 'notes' }: AppSwitcherProps) {
     }
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
+  }, []);
+
+  // Fetch current user's username for subdomain links
+  useEffect(() => {
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.authenticated && data.user?.username) {
+          setUsername(data.user.username);
+        }
+      })
+      .catch(() => { /* not logged in */ });
   }, []);
 
   const currentMod = MODULES.find((m) => m.id === current);
@@ -140,7 +163,7 @@ export function AppSwitcher({ current = 'notes' }: AppSwitcherProps) {
                     } transition-colors`}
                   >
                     <a
-                      href={m.domain ? `https://${m.domain}` : '#'}
+                      href={getModuleUrl(m, username)}
                       className="flex items-center gap-2.5 flex-1 px-3.5 py-2 text-slate-200 no-underline min-w-0"
                       onClick={() => setOpen(false)}
                     >

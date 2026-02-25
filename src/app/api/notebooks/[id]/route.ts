@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, isAuthed, getNotebookRole } from '@/lib/auth';
+import { getWorkspaceSlug } from '@/lib/workspace';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const workspaceSlug = getWorkspaceSlug();
+
     const notebook = await prisma.notebook.findUnique({
       where: { id: params.id },
       include: {
@@ -14,6 +17,7 @@ export async function GET(
           include: {
             tags: { include: { tag: true } },
           },
+          where: { archivedAt: null },
           orderBy: [{ isPinned: 'desc' }, { sortOrder: 'asc' }, { updatedAt: 'desc' }],
         },
         collaborators: {
@@ -24,6 +28,11 @@ export async function GET(
     });
 
     if (!notebook) {
+      return NextResponse.json({ error: 'Notebook not found' }, { status: 404 });
+    }
+
+    // Workspace boundary check: if on a subdomain, only show notebooks from that workspace
+    if (workspaceSlug && notebook.workspaceSlug !== workspaceSlug) {
       return NextResponse.json({ error: 'Notebook not found' }, { status: 404 });
     }
 

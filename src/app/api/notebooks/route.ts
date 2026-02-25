@@ -3,10 +3,21 @@ import { prisma } from '@/lib/prisma';
 import { generateSlug } from '@/lib/slug';
 import { nanoid } from 'nanoid';
 import { requireAuth, isAuthed } from '@/lib/auth';
+import { getWorkspaceSlug } from '@/lib/workspace';
 
 export async function GET() {
   try {
+    const workspaceSlug = getWorkspaceSlug();
+
+    const where: Record<string, unknown> = {};
+    if (workspaceSlug) {
+      // On a subdomain: show only that workspace's notebooks
+      where.workspaceSlug = workspaceSlug;
+    }
+    // On bare domain: show all notebooks (cross-workspace view)
+
     const notebooks = await prisma.notebook.findMany({
+      where,
       include: {
         _count: { select: { notes: true } },
         collaborators: {
@@ -28,6 +39,7 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth(request);
     if (!isAuthed(auth)) return auth;
     const { user } = auth;
+    const workspaceSlug = getWorkspaceSlug();
     const body = await request.json();
     const { title, description, coverColor } = body;
 
@@ -48,6 +60,7 @@ export async function POST(request: NextRequest) {
         slug: finalSlug,
         description: description?.trim() || null,
         coverColor: coverColor || '#f59e0b',
+        workspaceSlug: workspaceSlug || '',
         collaborators: {
           create: { userId: user.id, role: 'OWNER' },
         },

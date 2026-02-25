@@ -4,6 +4,7 @@ import { stripHtml } from '@/lib/strip-html';
 import { NoteType } from '@prisma/client';
 import { requireAuth, isAuthed } from '@/lib/auth';
 import { htmlToTipTapJson, tipTapJsonToMarkdown, mapNoteTypeToCardType } from '@/lib/content-convert';
+import { getWorkspaceSlug } from '@/lib/workspace';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
     const cardType = searchParams.get('cardType');
     const tag = searchParams.get('tag');
     const pinned = searchParams.get('pinned');
+    const workspaceSlug = getWorkspaceSlug();
 
     const where: Record<string, unknown> = {
       archivedAt: null, // exclude soft-deleted
@@ -25,11 +27,19 @@ export async function GET(request: NextRequest) {
       where.tags = { some: { tag: { name: tag.toLowerCase() } } };
     }
 
+    // Workspace boundary: filter notes by their notebook's workspace
+    if (workspaceSlug) {
+      where.notebook = {
+        ...(where.notebook as object || {}),
+        workspaceSlug,
+      };
+    }
+
     const notes = await prisma.note.findMany({
       where,
       include: {
         tags: { include: { tag: true } },
-        notebook: { select: { id: true, title: true, slug: true } },
+        notebook: { select: { id: true, title: true, slug: true, workspaceSlug: true } },
         parent: { select: { id: true, title: true } },
         children: { select: { id: true, title: true, cardType: true }, where: { archivedAt: null } },
         attachments: { include: { file: true }, orderBy: { position: 'asc' } },

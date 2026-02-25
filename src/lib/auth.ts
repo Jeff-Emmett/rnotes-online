@@ -1,11 +1,13 @@
 import { getEncryptIDSession } from '@encryptid/sdk/server/nextjs';
 import { NextResponse } from 'next/server';
 import { prisma } from './prisma';
+import { getWorkspaceSlug } from './workspace';
 import type { User } from '@prisma/client';
 
 export interface AuthResult {
   user: User;
   did: string;
+  username: string | null;
 }
 
 const UNAUTHORIZED = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,6 +16,7 @@ const UNAUTHORIZED = NextResponse.json({ error: 'Unauthorized' }, { status: 401 
  * Get authenticated user from request, or null if not authenticated.
  * Upserts User in DB by DID (find-or-create).
  * On first user creation, auto-claims orphaned notebooks/notes.
+ * Auto-migrates unscoped notebooks to user's workspace.
  */
 export async function getAuthUser(request: Request): Promise<AuthResult | null> {
   const claims = await getEncryptIDSession(request);
@@ -55,7 +58,21 @@ export async function getAuthUser(request: Request): Promise<AuthResult | null> 
     });
   }
 
-  return { user, did };
+  // Auto-migrate: assign unscoped notebooks owned by this user to their workspace
+  if (user.username) {
+    const workspaceSlug = user.username.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    await prisma.notebook.updateMany({
+      where: {
+        workspaceSlug: '',
+        collaborators: {
+          some: { userId: user.id, role: 'OWNER' },
+        },
+      },
+      data: { workspaceSlug },
+    });
+  }
+
+  return { user, did, username: user.username };
 }
 
 /**
