@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
  * Internal provision endpoint — called by rSpace Registry when activating
  * this app for a space. No auth required (only reachable from Docker network).
  *
+ * Payload: { space, description, admin_email, public, owner_did }
+ * The owner_did identifies who registered the space via the registry.
+ *
  * Creates a default Notebook scoped to the workspace slug + a system collaborator.
  */
 export async function POST(request: Request) {
@@ -13,13 +16,14 @@ export async function POST(request: Request) {
   if (!space) {
     return NextResponse.json({ error: "Missing space name" }, { status: 400 });
   }
+  const ownerDid: string = body.owner_did || "";
 
   // Check if a notebook already exists for this workspace
   const existing = await prisma.notebook.findFirst({
     where: { workspaceSlug: space },
   });
   if (existing) {
-    return NextResponse.json({ status: "exists", id: existing.id, slug: existing.slug });
+    return NextResponse.json({ status: "exists", id: existing.id, slug: existing.slug, owner_did: ownerDid });
   }
 
   const systemDid = `did:system:${space}`;
@@ -42,5 +46,5 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json({ status: "created", id: notebook.id, slug: notebook.slug }, { status: 201 });
+  return NextResponse.json({ status: "created", id: notebook.id, slug: notebook.slug, owner_did: ownerDid }, { status: 201 });
 }
