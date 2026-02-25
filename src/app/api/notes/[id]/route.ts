@@ -61,7 +61,7 @@ export async function PUT(
 
     const body = await request.json();
     const {
-      title, content, type, url, language, isPinned, notebookId, tags,
+      title, content, type, url, archiveUrl, language, isPinned, notebookId, tags,
       // Memory Card fields
       parentId, cardType, visibility, properties, summary, position,
       bodyJson: clientBodyJson,
@@ -71,6 +71,7 @@ export async function PUT(
     if (title !== undefined) data.title = title.trim();
     if (type !== undefined) data.type = type;
     if (url !== undefined) data.url = url || null;
+    if (archiveUrl !== undefined) data.archiveUrl = archiveUrl || null;
     if (language !== undefined) data.language = language || null;
     if (isPinned !== undefined) data.isPinned = isPinned;
     if (notebookId !== undefined) data.notebookId = notebookId || null;

@@ -34,6 +34,7 @@ interface NoteCardProps {
   updatedAt: string;
   tags: { id: string; name: string; color: string | null }[];
   url?: string | null;
+  archiveUrl?: string | null;
   visibility?: string;
   children?: { id: string }[];
   properties?: Record<string, unknown>;
@@ -41,7 +42,7 @@ interface NoteCardProps {
 
 export function NoteCard({
   id, title, type, cardType = 'note', contentPlain, summary,
-  isPinned, updatedAt, tags, url, visibility, children, properties,
+  isPinned, updatedAt, tags, url, archiveUrl, visibility, children, properties,
 }: NoteCardProps) {
   const snippet = summary || (contentPlain || '').slice(0, 120);
   const cardStyle = CARD_TYPE_STYLES[cardType] || CARD_TYPE_STYLES.note;
@@ -75,6 +76,11 @@ export function NoteCard({
         {visibility && visibility !== 'private' && (
           <span className="text-[10px] text-slate-500 px-1 py-0.5 rounded bg-slate-700/30">
             {visibility}
+          </span>
+        )}
+        {archiveUrl && (
+          <span className="text-emerald-400 text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-emerald-500/10" title="Unlocked article">
+            unlocked
           </span>
         )}
         <span className="text-[10px] text-slate-500 ml-auto">

@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "rNotes Web Clipper",
-  "version": "1.0.0",
-  "description": "Clip pages, text, links, and images to rNotes.online",
+  "name": "rNotes Web Clipper & Voice",
+  "version": "1.1.0",
+  "description": "Clip pages, text, links, and images to rNotes.online. Record voice notes with transcription.",
   "permissions": [
     "activeTab",
     "contextMenus",
     "storage",
-    "notifications"
+    "notifications",
+    "offscreen"
   ],
   "host_permissions": [
     "https://rnotes.online/*",
@@ -33,5 +34,17 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' https://esm.sh; object-src 'self'"
+  },
+  "commands": {
+    "open-voice-recorder": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "Open rVoice recorder"
+    }
   }
 }

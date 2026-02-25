@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const { user } = auth;
     const body = await request.json();
     const {
-      title, content, type, notebookId, url, language, tags,
+      title, content, type, notebookId, url, archiveUrl, language, tags,
       fileUrl, mimeType, fileSize, duration,
       // Memory Card fields
       parentId, cardType: cardTypeOverride, visibility, properties, summary, position, bodyJson: clientBodyJson,
@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
         notebookId: notebookId || null,
         authorId: user.id,
         url: url || null,
+        archiveUrl: archiveUrl || null,
         language: language || null,
         fileUrl: fileUrl || null,
         mimeType: mimeType || null,

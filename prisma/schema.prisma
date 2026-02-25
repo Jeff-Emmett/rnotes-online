@@ -76,6 +76,7 @@ model Note {
   contentPlain  String?  @db.Text
   type          NoteType @default(NOTE)
   url           String?
+  archiveUrl    String?
   language      String?
   mimeType      String?
   fileUrl       String?
