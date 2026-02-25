@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
-import { SearchBar } from '@/components/SearchBar';
 import { Header } from '@/components/Header';
 
 interface NotebookData {
@@ -32,25 +31,15 @@ export default function NotebooksPage() {
       <Header
         breadcrumbs={[{ label: 'Notebooks' }]}
         actions={
-          <>
-            <div className="hidden md:block w-64">
-              <SearchBar />
-            </div>
-            <Link
-              href="/notebooks/new"
-              className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
-            >
-              <span className="hidden sm:inline">New Notebook</span>
-              <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            </Link>
-          </>
+          <Link
+            href="/notebooks/new"
+            className="px-3 md:px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-medium rounded-lg transition-colors"
+          >
+            <span className="hidden sm:inline">New Notebook</span>
+            <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          </Link>
         }
       />
-      {/* Mobile search */}
-      <div className="md:hidden px-4 py-3 border-b border-slate-800">
-        <SearchBar />
-      </div>
-
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">

@@ -47,7 +47,7 @@ export function UserMenu() {
         href="https://auth.ridentity.online"
         className="px-3 py-1.5 text-sm bg-cyan-500 hover:bg-cyan-400 text-black font-medium rounded-lg transition-colors no-underline"
       >
-        Sign In
+        🔑 Sign In
       </a>
     );
   }
@@ -63,7 +63,7 @@ export function UserMenu() {
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
           {(user.username || 'U')[0].toUpperCase()}
         </div>
-        <span className="text-sm text-slate-300 hidden sm:inline">{displayName}</span>
+        <span className="text-sm text-slate-300 hidden sm:inline">🔐 {displayName}</span>
         <span className="text-[0.7em] text-slate-500 hidden sm:inline">&#9662;</span>
       </button>
 

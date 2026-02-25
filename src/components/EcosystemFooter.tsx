@@ -1,30 +1,39 @@
 'use client';
 
 const FOOTER_LINKS = [
+  // Creating
   { name: 'rSpace', href: 'https://rspace.online' },
   { name: 'rNotes', href: 'https://rnotes.online' },
   { name: 'rPubs', href: 'https://rpubs.online' },
+  { name: 'rTube', href: 'https://rtube.online' },
+  { name: 'rSwag', href: 'https://rswag.online' },
+  // Planning
   { name: 'rCal', href: 'https://rcal.online' },
   { name: 'rTrips', href: 'https://rtrips.online' },
   { name: 'rMaps', href: 'https://rmaps.online' },
+  // Communicating
   { name: 'rChats', href: 'https://rchats.online' },
   { name: 'rInbox', href: 'https://rinbox.online' },
   { name: 'rMail', href: 'https://rmail.online' },
   { name: 'rForum', href: 'https://rforum.online' },
+  // Deciding
   { name: 'rChoices', href: 'https://rchoices.online' },
   { name: 'rVote', href: 'https://rvote.online' },
+  // Funding & Commerce
   { name: 'rFunds', href: 'https://rfunds.online' },
   { name: 'rWallet', href: 'https://rwallet.online' },
   { name: 'rCart', href: 'https://rcart.online' },
   { name: 'rAuctions', href: 'https://rauctions.online' },
-  { name: 'rSwag', href: 'https://rswag.online' },
+  // Sharing
   { name: 'rPhotos', href: 'https://rphotos.online' },
-  { name: 'rTube', href: 'https://rtube.online' },
   { name: 'rNetwork', href: 'https://rnetwork.online' },
-  { name: 'rSocials', href: 'https://rsocials.online' },
   { name: 'rFiles', href: 'https://rfiles.online' },
+  { name: 'rSocials', href: 'https://rsocials.online' },
+  // Observing
   { name: 'rData', href: 'https://rdata.online' },
+  // Work & Productivity
   { name: 'rWork', href: 'https://rwork.online' },
+  // Identity & Infrastructure
   { name: 'rIDs', href: 'https://ridentity.online' },
   { name: 'rStack', href: 'https://rstack.online' },
 ];

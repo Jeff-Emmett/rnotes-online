@@ -208,7 +208,7 @@ export default function NotebookDetailPage() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              AI Notebook
+              Open Notebook
             </button>
           </div>
 

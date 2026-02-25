@@ -713,7 +713,7 @@ export default function VoicePage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-800 backdrop-blur-sm bg-[#0a0a0a]/90 sticky top-0 z-50">
+      <header className="border-b border-slate-800 backdrop-blur-sm bg-slate-900/85 sticky top-0 z-50">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <AppSwitcher current="notes" />

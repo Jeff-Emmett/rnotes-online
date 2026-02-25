@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
-import { SearchBar } from '@/components/SearchBar';
 import { EcosystemFooter } from '@/components/EcosystemFooter';
 import { TranscriptionDemo } from '@/components/TranscriptionDemo';
 
@@ -30,11 +29,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Mobile search */}
-      <div className="md:hidden px-4 py-3 border-b border-slate-800">
-        <SearchBar />
-      </div>
-
       {/* Hero */}
       <section className="py-12 md:py-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">

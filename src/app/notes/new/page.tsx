@@ -42,11 +42,14 @@ function NewNoteForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedNotebook = searchParams.get('notebookId');
+  const preselectedType = searchParams.get('type');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [bodyJson, setBodyJson] = useState<object | null>(null);
-  const [type, setType] = useState('NOTE');
+  const [type, setType] = useState(
+    NOTE_TYPES.some((t) => t.value === preselectedType) ? preselectedType! : 'NOTE'
+  );
   const [url, setUrl] = useState('');
   const [language, setLanguage] = useState('');
   const [tags, setTags] = useState('');
