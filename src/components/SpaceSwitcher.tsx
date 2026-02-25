@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useEncryptID } from '@encryptid/sdk/ui/react';
 
 interface SpaceInfo {
   slug: string;
@@ -10,17 +9,12 @@ interface SpaceInfo {
   role?: string;
 }
 
-interface SpaceSwitcherProps {
-  current?: string;
-  name?: string;
-}
-
-export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps) {
+export function SpaceSwitcher() {
   const [open, setOpen] = useState(false);
   const [spaces, setSpaces] = useState<SpaceInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { isAuthenticated } = useEncryptID();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -32,6 +26,16 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
+  // Check auth status on mount
+  useEffect(() => {
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.authenticated) setIsAuthenticated(true);
+      })
+      .catch(() => {});
+  }, []);
+
   const loadSpaces = async () => {
     if (loaded) return;
     try {
@@ -41,7 +45,7 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
         setSpaces(data.spaces || []);
       }
     } catch {
-      // API not available — show empty
+      // API not available
     }
     setLoaded(true);
   };
@@ -54,8 +58,6 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
     }
   };
 
-  const displayName = name || current;
-
   const mySpaces = spaces.filter((s) => s.role);
   const publicSpaces = spaces.filter((s) => !s.role);
 
@@ -66,7 +68,7 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/[0.05] transition-colors"
       >
         <span className="opacity-40 font-light mr-0.5">/</span>
-        <span className="max-w-[160px] truncate">{displayName}</span>
+        <span className="max-w-[160px] truncate">personal</span>
         <span className="text-[0.7em] opacity-50">&#9662;</span>
       </button>
 
@@ -97,10 +99,8 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
                   {mySpaces.map((s) => (
                     <a
                       key={s.slug}
-                      href={`https://rspace.online/${s.slug}/notes`}
-                      className={`flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors ${
-                        s.slug === current ? 'bg-cyan-500/10' : 'hover:bg-white/[0.05]'
-                      }`}
+                      href={`https://rspace.online/${s.slug}`}
+                      className="flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors hover:bg-white/[0.05]"
                       onClick={() => setOpen(false)}
                     >
                       <span className="text-base">{s.icon || '🌐'}</span>
@@ -124,10 +124,8 @@ export function SpaceSwitcher({ current = 'personal', name }: SpaceSwitcherProps
                   {publicSpaces.map((s) => (
                     <a
                       key={s.slug}
-                      href={`https://rspace.online/${s.slug}/notes`}
-                      className={`flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors ${
-                        s.slug === current ? 'bg-cyan-500/10' : 'hover:bg-white/[0.05]'
-                      }`}
+                      href={`https://rspace.online/${s.slug}`}
+                      className="flex items-center gap-2.5 px-3.5 py-2.5 text-slate-200 no-underline transition-colors hover:bg-white/[0.05]"
                       onClick={() => setOpen(false)}
                     >
                       <span className="text-base">{s.icon || '🌐'}</span>
