@@ -10,8 +10,18 @@ interface SpaceInfo {
 }
 
 interface SpaceSwitcherProps {
-  /** Current app domain, e.g. 'rfunds.online'. Space links become <space>.<domain> */
+  /** Current app domain, e.g. 'rchats.online'. Space links become <space>.<domain> */
   domain?: string;
+}
+
+/** Read the EncryptID token from localStorage (set by token-relay across r*.online) */
+function getEncryptIDToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('encryptid_token');
+  } catch {
+    return null;
+  }
 }
 
 export function SpaceSwitcher({ domain }: SpaceSwitcherProps) {
@@ -38,18 +48,29 @@ export function SpaceSwitcher({ domain }: SpaceSwitcherProps) {
 
   // Check auth status on mount
   useEffect(() => {
-    fetch('/api/me')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.authenticated) setIsAuthenticated(true);
-      })
-      .catch(() => {});
+    const token = getEncryptIDToken();
+    if (token) {
+      setIsAuthenticated(true);
+    } else {
+      // Fallback: check /api/me
+      fetch('/api/me')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.authenticated) setIsAuthenticated(true);
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const loadSpaces = async () => {
     if (loaded) return;
     try {
-      const res = await fetch('/api/spaces');
+      // Pass EncryptID token so the proxy can forward it to rSpace
+      const token = getEncryptIDToken();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/spaces', { headers });
       if (res.ok) {
         const data = await res.json();
         setSpaces(data.spaces || []);

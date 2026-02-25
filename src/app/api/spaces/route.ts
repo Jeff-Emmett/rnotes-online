@@ -1,34 +1,45 @@
-import { NextResponse } from 'next/server';
-
 /**
- * GET /api/spaces — List spaces available to the current user.
- * Proxies to rSpace API when available, otherwise returns empty list.
+ * Spaces API proxy — forwards to rSpace (the canonical spaces authority).
+ *
+ * Every r*App proxies /api/spaces to rSpace so the SpaceSwitcher dropdown
+ * shows the same spaces everywhere. The EncryptID token is forwarded so
+ * rSpace can return user-specific spaces (owned/member).
  */
-export async function GET(request: Request) {
-  const rspaceUrl = process.env.RSPACE_INTERNAL_URL || process.env.NEXT_PUBLIC_RSPACE_URL;
 
-  if (!rspaceUrl) {
-    return NextResponse.json({ spaces: [] });
+import { NextRequest, NextResponse } from 'next/server';
+
+const RSPACE_API = process.env.RSPACE_API_URL || 'https://rspace.online';
+
+export async function GET(req: NextRequest) {
+  const headers: Record<string, string> = {};
+
+  // Forward the EncryptID token (from Authorization header or cookie)
+  const auth = req.headers.get('Authorization');
+  if (auth) {
+    headers['Authorization'] = auth;
+  } else {
+    // Fallback: check for encryptid_token cookie
+    const tokenCookie = req.cookies.get('encryptid_token');
+    if (tokenCookie) {
+      headers['Authorization'] = `Bearer ${tokenCookie.value}`;
+    }
   }
 
   try {
-    // Forward auth header to rSpace
-    const authHeader = request.headers.get('Authorization');
-    const headers: Record<string, string> = {};
-    if (authHeader) headers['Authorization'] = authHeader;
-
-    const res = await fetch(`${rspaceUrl}/api/spaces`, {
+    const res = await fetch(`${RSPACE_API}/api/spaces`, {
       headers,
-      next: { revalidate: 60 },
+      next: { revalidate: 30 }, // cache for 30s to avoid hammering rSpace
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      return NextResponse.json(data);
+    if (!res.ok) {
+      // If rSpace is down, return empty spaces (graceful degradation)
+      return NextResponse.json({ spaces: [] });
     }
-  } catch {
-    // rSpace not reachable
-  }
 
-  return NextResponse.json({ spaces: [] });
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch {
+    // rSpace unreachable — return empty list
+    return NextResponse.json({ spaces: [] });
+  }
 }
