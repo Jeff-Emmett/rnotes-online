@@ -6,6 +6,12 @@ import { AppSwitcher } from '@/components/AppSwitcher';
 import { SpaceSwitcher } from '@/components/SpaceSwitcher';
 import { UserMenu } from '@/components/UserMenu';
 import { authFetch } from '@/lib/authFetch';
+import { isModelCached } from '@/lib/parakeetOffline';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 // --- Types ---
 
@@ -99,6 +105,105 @@ export default function VoicePage() {
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const editRef = useRef<HTMLTextAreaElement>(null);
+
+  // PWA install + offline model
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [modelCached, setModelCached] = useState(false);
+  const [modelDownloading, setModelDownloading] = useState(false);
+  const [modelProgress, setModelProgress] = useState<WhisperProgress | null>(null);
+
+  useEffect(() => {
+    // Check install state
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || (navigator as unknown as { standalone?: boolean }).standalone === true;
+    setIsInstalled(standalone);
+
+    // Check model cache
+    setModelCached(isModelCached());
+
+    // Capture install prompt
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+    });
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallApp = useCallback(async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+        // Start model download after install
+        if (!modelCached) downloadModel();
+      }
+      setInstallPrompt(null);
+    }
+  }, [installPrompt, modelCached]);
+
+  const downloadModel = useCallback(async () => {
+    if (modelCached || modelDownloading) return;
+    setModelDownloading(true);
+    try {
+      const { transcribeOffline } = await import('@/lib/parakeetOffline');
+      // Create a tiny silent audio blob to trigger model download + warm-up
+      const silentCtx = new AudioContext({ sampleRate: 16000 });
+      const buffer = silentCtx.createBuffer(1, 16000, 16000); // 1 second of silence
+      const wavBlob = await new Promise<Blob>((resolve) => {
+        const offlineCtx = new OfflineAudioContext(1, 16000, 16000);
+        const src = offlineCtx.createBufferSource();
+        src.buffer = buffer;
+        src.connect(offlineCtx.destination);
+        src.start();
+        offlineCtx.startRendering().then((rendered) => {
+          const float32 = rendered.getChannelData(0);
+          // Encode as WAV
+          const wavHeader = new ArrayBuffer(44);
+          const view = new DataView(wavHeader);
+          const pcmLen = float32.length * 2;
+          // RIFF header
+          view.setUint32(0, 0x52494646, false); // "RIFF"
+          view.setUint32(4, 36 + pcmLen, true);
+          view.setUint32(8, 0x57415645, false); // "WAVE"
+          // fmt chunk
+          view.setUint32(12, 0x666d7420, false); // "fmt "
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true); // PCM
+          view.setUint16(22, 1, true); // mono
+          view.setUint32(24, 16000, true); // sample rate
+          view.setUint32(28, 32000, true); // byte rate
+          view.setUint16(32, 2, true); // block align
+          view.setUint16(34, 16, true); // bits per sample
+          // data chunk
+          view.setUint32(36, 0x64617461, false); // "data"
+          view.setUint32(40, pcmLen, true);
+          const pcm = new Int16Array(float32.length);
+          for (let i = 0; i < float32.length; i++) {
+            pcm[i] = Math.max(-32768, Math.min(32767, float32[i] * 32767));
+          }
+          resolve(new Blob([wavHeader, pcm.buffer], { type: 'audio/wav' }));
+        });
+      });
+      await silentCtx.close();
+
+      await transcribeOffline(wavBlob, (p) => setModelProgress(p));
+      setModelCached(true);
+      setModelProgress(null);
+    } catch (err) {
+      console.warn('Model download failed:', err);
+      setModelProgress({ status: 'error', message: 'Download failed - will retry on next use' });
+      setTimeout(() => setModelProgress(null), 3000);
+    } finally {
+      setModelDownloading(false);
+    }
+  }, [modelCached, modelDownloading]);
 
   // Load notebooks
   useEffect(() => {
@@ -541,10 +646,72 @@ export default function VoicePage() {
                 Local
               </span>
             )}
+            {/* Install app button */}
+            {!isInstalled && installPrompt && (
+              <button
+                onClick={handleInstallApp}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full text-[11px] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Install App
+              </button>
+            )}
+            {/* Download offline model button */}
+            {isInstalled && !modelCached && !modelDownloading && (
+              <button
+                onClick={downloadModel}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-full text-[11px] font-semibold text-violet-400 hover:bg-violet-500/20 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Offline Mode
+              </button>
+            )}
+            {/* Offline ready badge */}
+            {modelCached && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-violet-400 uppercase tracking-wider" title="Parakeet model cached - works offline">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Offline
+              </span>
+            )}
             <UserMenu />
           </div>
         </div>
       </header>
+
+      {/* Model download progress bar */}
+      {modelDownloading && modelProgress && (
+        <div className="px-4 py-2 bg-violet-950/50 border-b border-violet-900/50">
+          <div className="max-w-lg mx-auto">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] text-violet-300 font-medium">
+                {modelProgress.message || 'Downloading offline model...'}
+              </span>
+              {modelProgress.status === 'downloading' && modelProgress.progress !== undefined && (
+                <span className="text-[11px] text-violet-400 font-mono">{modelProgress.progress}%</span>
+              )}
+            </div>
+            {modelProgress.status === 'downloading' && (
+              <div className="h-1.5 bg-violet-900/50 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-violet-500 rounded-full transition-all duration-300"
+                  style={{ width: `${modelProgress.progress || 0}%` }}
+                />
+              </div>
+            )}
+            {modelProgress.status === 'loading' && (
+              <div className="h-1.5 bg-violet-900/50 rounded-full overflow-hidden">
+                <div className="h-full bg-violet-500 rounded-full w-full animate-pulse" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 gap-6 max-w-lg mx-auto w-full">
@@ -584,6 +751,31 @@ export default function VoicePage() {
             {state === 'processing' && (offlineProgress?.message || 'Processing...')}
             {state === 'done' && 'Recording complete'}
           </p>
+
+          {/* Install + offline CTA when idle and not installed */}
+          {state === 'idle' && !isInstalled && installPrompt && (
+            <button
+              onClick={handleInstallApp}
+              className="mt-2 flex items-center gap-2 px-4 py-2 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 hover:border-amber-500/30 hover:text-amber-400 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download app for offline use
+            </button>
+          )}
+          {/* Download model CTA when installed but model not cached */}
+          {state === 'idle' && isInstalled && !modelCached && !modelDownloading && (
+            <button
+              onClick={downloadModel}
+              className="mt-2 flex items-center gap-2 px-4 py-2 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-300 hover:border-violet-500/30 hover:text-violet-400 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download offline transcription model (634 MB)
+            </button>
+          )}
         </div>
 
         {/* Offline model progress bar */}
