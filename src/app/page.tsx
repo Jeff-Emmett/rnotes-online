@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { NotebookCard } from '@/components/NotebookCard';
 import { SearchBar } from '@/components/SearchBar';
 import { Header } from '@/components/Header';
+import { EcosystemFooter } from '@/components/EcosystemFooter';
 import { TranscriptionDemo } from '@/components/TranscriptionDemo';
 
 interface NotebookData {
@@ -295,38 +296,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 py-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-500 mb-4">
-            <span className="font-medium text-slate-400">r* Ecosystem</span>
-            <a href="https://rspace.online" className="hover:text-slate-300 transition-colors">rSpace</a>
-            <a href="https://rmaps.online" className="hover:text-slate-300 transition-colors">rMaps</a>
-            <a href="https://rnotes.online" className="hover:text-slate-300 transition-colors font-medium text-slate-300">rNotes</a>
-            <a href="https://rvote.online" className="hover:text-slate-300 transition-colors">rVote</a>
-            <a href="https://rfunds.online" className="hover:text-slate-300 transition-colors">rFunds</a>
-            <a href="https://rtrips.online" className="hover:text-slate-300 transition-colors">rTrips</a>
-            <a href="https://rcart.online" className="hover:text-slate-300 transition-colors">rCart</a>
-            <a href="https://rchoices.online" className="hover:text-slate-300 transition-colors">rChoices</a>
-            <a href="https://rwallet.online" className="hover:text-slate-300 transition-colors">rWallet</a>
-            <a href="https://rfiles.online" className="hover:text-slate-300 transition-colors">rFiles</a>
-            <a href="https://rtube.online" className="hover:text-slate-300 transition-colors">rTube</a>
-            <a href="https://rcal.online" className="hover:text-slate-300 transition-colors">rCal</a>
-            <a href="https://rnetwork.online" className="hover:text-slate-300 transition-colors">rNetwork</a>
-            <a href="https://rinbox.online" className="hover:text-slate-300 transition-colors">rInbox</a>
-            <a href="https://rstack.online" className="hover:text-slate-300 transition-colors">rStack</a>
-            <a href="https://rauctions.online" className="hover:text-slate-300 transition-colors">rAuctions</a>
-            <a href="https://rpubs.online" className="hover:text-slate-300 transition-colors">rPubs</a>
-            <a href="https://rdata.online" className="hover:text-slate-300 transition-colors">rData</a>
-          </div>
-          <p className="text-center text-xs text-slate-600">
-            Part of the r* ecosystem — collaborative tools for communities.
-          </p>
-          <p className="text-center text-[10px] text-slate-700 mt-2">
-            Built on the Memory Card open spec.
-          </p>
-        </div>
-      </footer>
+      <EcosystemFooter current="rNotes" />
     </div>
   );
 }
