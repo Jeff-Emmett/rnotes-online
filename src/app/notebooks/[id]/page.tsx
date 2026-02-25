@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { NoteCard } from '@/components/NoteCard';
 import { CanvasEmbed } from '@/components/CanvasEmbed';
-import { UserMenu } from '@/components/UserMenu';
+import { Header } from '@/components/Header';
 import { authFetch } from '@/lib/authFetch';
 import type { CanvasShapeMessage } from '@/lib/canvas-sync';
 
@@ -116,20 +116,13 @@ export default function NotebookDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Link href="/" className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
-                rN
-              </div>
-            </Link>
-            <span className="text-slate-600 hidden sm:inline">/</span>
-            <Link href="/notebooks" className="text-slate-400 hover:text-white transition-colors hidden sm:inline">Notebooks</Link>
-            <span className="text-slate-600 hidden sm:inline">/</span>
-            <span className="text-white truncate">{notebook.title}</span>
-          </div>
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+      <Header
+        breadcrumbs={[
+          { label: 'Notebooks', href: '/notebooks' },
+          { label: notebook.title },
+        ]}
+        actions={
+          <>
             {notebook.canvasSlug ? (
               <button
                 onClick={() => setShowCanvas(!showCanvas)}
@@ -165,10 +158,9 @@ export default function NotebookDetailPage() {
               <span className="hidden sm:inline">Delete</span>
               <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
-            <UserMenu />
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+      />
 
       <div className={`flex ${showCanvas ? 'gap-0' : ''}`}>
         {/* Notes panel */}

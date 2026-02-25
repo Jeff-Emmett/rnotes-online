@@ -2,8 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { useEncryptID } from '@encryptid/sdk/ui/react';
+import { Header } from '@/components/Header';
 
 function SignInForm() {
   const router = useRouter();
@@ -68,16 +68,7 @@ function SignInForm() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      <nav className="border-b border-slate-800 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
-              rN
-            </div>
-            <span className="text-white font-semibold">rNotes</span>
-          </Link>
-        </div>
-      </nav>
+      <Header breadcrumbs={[{ label: 'Sign In' }]} />
 
       <main className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-sm">

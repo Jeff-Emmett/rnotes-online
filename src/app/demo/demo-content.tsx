@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useMemo, useCallback } from 'react'
 import { useDemoSync, type DemoShape } from '@/lib/demo-sync'
 import { TranscriptionDemo } from '@/components/TranscriptionDemo'
+import { Header } from '@/components/Header'
 
 /* --- Types -------------------------------------------------------------- */
 
@@ -587,21 +588,11 @@ export default function DemoContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      {/* Nav */}
-      <nav className="border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center font-bold text-slate-900 text-sm">
-                rN
-              </div>
-              <span className="font-semibold text-lg">rNotes</span>
-            </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-sm text-slate-400">Demo</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Connection indicator */}
+      <Header
+        maxWidth="max-w-7xl"
+        breadcrumbs={[{ label: 'Demo' }]}
+        actions={
+          <>
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
               <span
                 className={`w-2 h-2 rounded-full ${
@@ -610,28 +601,15 @@ export default function DemoContent() {
               />
               <span className="hidden sm:inline">{connected ? 'Connected' : 'Disconnected'}</span>
             </div>
-
-            <Link
-              href="/"
-              className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:inline"
-            >
-              Home
-            </Link>
-            <Link
-              href="/demo"
-              className="text-sm text-amber-400 hover:text-amber-300 transition-colors hidden sm:inline"
-            >
-              Demo
-            </Link>
             <Link
               href="/notebooks/new"
               className="text-sm px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors font-medium text-slate-900"
             >
               Start Taking Notes
             </Link>
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+      />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 pt-12 pb-8">

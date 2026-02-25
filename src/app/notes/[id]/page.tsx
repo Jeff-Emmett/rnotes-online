@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { NoteEditor } from '@/components/NoteEditor';
 import { TagBadge } from '@/components/TagBadge';
-import { UserMenu } from '@/components/UserMenu';
+import { Header } from '@/components/Header';
 import { authFetch } from '@/lib/authFetch';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -183,26 +182,16 @@ export default function NoteDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      <nav className="border-b border-slate-800 px-4 md:px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Link href="/" className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-black">
-                rN
-              </div>
-            </Link>
-            <span className="text-slate-600 hidden sm:inline">/</span>
-            {note.notebook ? (
-              <>
-                <Link href={`/notebooks/${note.notebook.id}`} className="text-slate-400 hover:text-white transition-colors hidden sm:inline truncate max-w-[120px]">
-                  {note.notebook.title}
-                </Link>
-                <span className="text-slate-600 hidden sm:inline">/</span>
-              </>
-            ) : null}
-            <span className="text-white truncate max-w-[120px] md:max-w-[200px]">{note.title}</span>
-          </div>
-          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+      <Header
+        maxWidth="max-w-4xl"
+        breadcrumbs={[
+          ...(note.notebook
+            ? [{ label: note.notebook.title, href: `/notebooks/${note.notebook.id}` }]
+            : []),
+          { label: note.title },
+        ]}
+        actions={
+          <>
             <button
               onClick={handleTogglePin}
               className={`px-2 md:px-3 py-1.5 text-sm rounded-lg border transition-colors ${
@@ -249,10 +238,9 @@ export default function NoteDetailPage() {
               <span className="hidden sm:inline">Delete</span>
               <svg className="w-4 h-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </button>
-            <UserMenu />
-          </div>
-        </div>
-      </nav>
+          </>
+        }
+      />
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* Metadata */}
