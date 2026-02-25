@@ -300,13 +300,14 @@ document.getElementById('unlockBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('voiceBtn').addEventListener('click', () => {
-  // Open voice recorder in a small popup window
+document.getElementById('voiceBtn').addEventListener('click', async () => {
+  // Open rVoice PWA page in a popup window (supports PiP pop-out)
+  const settings = await getSettings();
   chrome.windows.create({
-    url: chrome.runtime.getURL('voice.html'),
+    url: `${settings.host}/voice`,
     type: 'popup',
-    width: 380,
-    height: 520,
+    width: 400,
+    height: 600,
     focused: true,
   });
   // Close the current popup

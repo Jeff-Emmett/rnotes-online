@@ -293,13 +293,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // --- Keyboard shortcut handler ---
 
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'open-voice-recorder') {
+    const settings = await getSettings();
     chrome.windows.create({
-      url: chrome.runtime.getURL('voice.html'),
+      url: `${settings.host}/voice`,
       type: 'popup',
-      width: 380,
-      height: 520,
+      width: 400,
+      height: 600,
       focused: true,
     });
   }

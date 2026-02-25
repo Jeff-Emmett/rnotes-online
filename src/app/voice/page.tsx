@@ -666,10 +666,16 @@ export default function VoicePage() {
         e.preventDefault();
         saveToRNotes();
       }
+      // Alt+P toggles PiP
+      if (e.altKey && e.code === 'KeyP') {
+        e.preventDefault();
+        if (pipWindow) closePiP();
+        else openPiP();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [toggleRecording, saveToRNotes, state]);
+  }, [toggleRecording, saveToRNotes, state, pipWindow, openPiP, closePiP]);
 
   // Keyboard events inside PiP window
   useEffect(() => {
@@ -687,12 +693,17 @@ export default function VoicePage() {
         ke.preventDefault();
         saveToRNotes();
       }
+      // Alt+P closes PiP from within PiP window
+      if (ke.altKey && ke.code === 'KeyP') {
+        ke.preventDefault();
+        closePiP();
+      }
     };
     pipWindow.document.addEventListener('keydown', handler);
     return () => {
       try { pipWindow.document.removeEventListener('keydown', handler); } catch {}
     };
-  }, [pipWindow, toggleRecording, saveToRNotes, state]);
+  }, [pipWindow, toggleRecording, saveToRNotes, state, closePiP]);
 
   // --- Render ---
 
@@ -1032,8 +1043,14 @@ export default function VoicePage() {
         <div className="flex gap-3">
           <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-[10px]">Space</kbd>
           <span>record</span>
-          <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-[10px]">Ctrl+Enter</kbd>
+          <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-[10px]">Ctrl+&#x23CE;</kbd>
           <span>save</span>
+          {pipSupported && (
+            <>
+              <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-[10px]">Alt+P</kbd>
+              <span>pop out</span>
+            </>
+          )}
         </div>
         <a href="/" className="hover:text-amber-400 transition-colors">rNotes.online</a>
       </footer>
